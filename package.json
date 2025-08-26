@@ -1,0 +1,21 @@
+{
+  "name": "imageviewerelectron",
+  "version": "0.1.0",
+  "description": "Um pequeno projeto de um visualizador de imagem",
+  "homepage": "https://github.com/jamersonnascimento/ImageViewerElectron#readme",
+  "bugs": {
+    "url": "https://github.com/jamersonnascimento/ImageViewerElectron/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jamersonnascimento/ImageViewerElectron.git"
+  },
+  "license": "MIT",
+  "author": "Jamerson Nascimento",
+  "type": "commonjs",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
