@@ -1,0 +1,124 @@
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  margin: 0;
+  background: #121214;
+  color: #e6eef8;
+}
+
+/* Barra de título */
+.titlebar {
+  background: linear-gradient(180deg,#2f3438 0%, #232629 100%);
+  color: white;
+  display: flex;
+  justify-content: space-between; /* título à esquerda, botões à direita */
+  align-items: center;
+  padding: 0 10px;
+  height: 34px;
+  -webkit-app-region: drag;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+}
+
+.titlebar .title {
+  font-weight: 600;
+  font-size: 13px;
+  user-select: none;
+}
+
+/* Container dos botões */
+.window-buttons {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* Botões */
+.window-buttons button {
+  -webkit-app-region: no-drag;
+  margin: 0;
+  padding: 0;
+  width: 34px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  color: #e6eef8;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 140ms ease, transform 80ms ease;
+}
+
+.window-buttons button:hover {
+  background: rgba(255,255,255,0.06);
+  transform: translateY(-1px);
+}
+
+/* Botão fechar em vermelho */
+#close {
+  color: #ffb3b3;
+}
+
+#close:hover {
+  background: rgba(255,80,80,0.16);
+}
+
+/* Área de conteúdo */
+.content {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Botão "Abrir Imagem" */
+#openImage {
+  padding: 8px 14px;
+  background: linear-gradient(180deg,#6b7bff,#4f5de8);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(79,93,232,0.18);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+#openImage:hover { transform: translateY(-2px); }
+
+/* Caixa com informações */
+#imageInfo {
+  margin-top: 14px;
+  padding: 10px 12px;
+  background: #16171a;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+  width: min(940px, 92%);
+  color: #dfe8f8;
+  word-break: break-word;
+}
+
+/* Imagem carregada */
+#imagePreview {
+  margin-top: 18px;
+  max-width: 92%;
+  max-height: 70vh;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  object-fit: contain;
+  background: #0b0c0d;
+}
+
+#statusBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #1e1e1e;
+  color: #aaa;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-top: 1px solid #333;
+  text-align: right;
+  font-family: monospace;
+}

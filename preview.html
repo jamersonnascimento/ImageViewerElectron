@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Pré Visualização</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{ --bg:#0f1112; --bar:#1b1f22; --accent:#6b7bff; --text:#e9f1ff; }
+    html,body{ margin:0;height:100%; }
+    body{
+      background: linear-gradient(180deg,var(--bg),#08090a);
+      color:var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      display:flex;
+      flex-direction:column;
+      align-items:stretch;
+      gap:8px;
+    }
+
+    /* Titlebar personalizado */
+    .preview-titlebar{
+      height:30px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      background: linear-gradient(180deg,var(--bar), #131516);
+      padding:0 8px;
+      -webkit-app-region: drag;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+    .preview-titlebar .title{
+      font-size:13px;
+      font-weight:600;
+      user-select:none;
+      color:var(--text);
+    }
+    .preview-titlebar .controls{
+      display:flex;
+      gap:6px;
+      -webkit-app-region: no-drag;
+    }
+    .preview-titlebar button{
+      background:transparent;
+      color:var(--text);
+      border:none;
+      width:30px;height:24px;
+      border-radius:6px;
+      cursor:pointer;
+    }
+    .preview-titlebar button:hover{ background: rgba(255,255,255,0.04); }
+
+    /* Conteúdo da janela */
+    .preview-body{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:10px;
+      height: calc(100% - 30px);
+    }
+    #previewImage{
+      max-width:100%;
+      max-height:100%;
+      border-radius:8px;
+      box-shadow: 0 8px 26px rgba(0,0,0,0.6);
+      display:none;
+      object-fit:contain;
+      background:#0b0c0d;
+    }
+    #placeholder{
+      color: rgba(255,255,255,0.18);
+      font-size:13px;
+      text-align:center;
+    }
+  </style>
+</head>
+<body>
+  <div class="preview-titlebar">
+    <div class="title">Pré Visualização</div>
+    <div class="controls">
+      <button id="closePreview" title="Fechar">✕</button>
+    </div>
+  </div>
+
+  <div class="preview-body">
+    <img id="previewImage" alt="preview" />
+    <div id="placeholder">Nenhuma imagem carregada</div>
+  </div>
+
+  <script>
+    const img = document.getElementById('previewImage');
+    const placeholder = document.getElementById('placeholder');
+    const closeBtn = document.getElementById('closePreview');
+
+    // Evento vindo do main (preload expõe onPreviewImage)
+    if (window.electronAPI && window.electronAPI.onPreviewImage) {
+      window.electronAPI.onPreviewImage((dataUrl) => {
+        if (!dataUrl) {
+          img.style.display = 'none';
+          placeholder.style.display = 'block';
+          return;
+        }
+        placeholder.style.display = 'none';
+        img.style.display = 'block';
+        img.src = dataUrl;
+      });
+    } else {
+      console.warn('electronAPI.onPreviewImage não encontrado no preload.');
+    }
+
+    closeBtn.addEventListener('click', () => {
+      window.close();
+    });
+  </script>
+</body>
+</html>
