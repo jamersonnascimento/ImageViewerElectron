@@ -1,30 +1,30 @@
-const { app, BrowserWindow, ipcMain, dialog, globalShortcut, screen } = require('electron');
-const path = require('path');
-const fs = require('fs');
+const { app, BrowserWindow, ipcMain, dialog, globalShortcut, screen } = require('electron'); // Importar módulos do Electron
+const path = require('path'); // Importar módulo de caminho
+const fs = require('fs') // Importar módulo de filesystem
 
-let mainWindow;
-let previewWindow;
-const stateFile = path.join(app.getPath('userData'), 'window-state.json');
+let mainWindow; // Janela principal
+let previewWindow;  // Janela de pré-visualização
+const stateFile = path.join(app.getPath('userData'), 'window-state.json'); // Arquivo para salvar estado da janela
 let lastImageData = null; // guarda a última imagem aberta
 
-function restoreWindowState() {
+function restoreWindowState() { // Restaurar estado da janela
   try {
-    return JSON.parse(fs.readFileSync(stateFile, 'utf8'));
+    return JSON.parse(fs.readFileSync(stateFile, 'utf8')); 
   } catch {
     return { width: 800, height: 600 };
   }
 }
 
-function saveWindowState() {
+function saveWindowState() { // Salvar estado da janela
   if (!mainWindow) return;
   const bounds = mainWindow.getBounds();
   fs.writeFileSync(stateFile, JSON.stringify(bounds));
 }
 
-function createMainWindow() {
+function createMainWindow() { // Criar janela principal
   const state = restoreWindowState();
 
-  mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({ // Criar janela principal
     ...state,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
@@ -32,22 +32,22 @@ function createMainWindow() {
     frame: false
   });
 
-  mainWindow.loadFile('index.html');
+  mainWindow.loadFile('index.html'); // Carregar arquivo HTML
 
-  mainWindow.on('close', saveWindowState);
+  mainWindow.on('close', saveWindowState); // Salvar estado da janela ao fechar
 
   //  Broadcast window-state-updated
-  const sendWindowState = () => {
+  const sendWindowState = () => { // Enviar estado da janela
     if (!mainWindow) return;
     const bounds = mainWindow.getBounds();
     mainWindow.webContents.send('window-state-updated', bounds);
   };
 
-  mainWindow.on('resize', sendWindowState);
-  mainWindow.on('move', sendWindowState);
+  mainWindow.on('resize', sendWindowState); // Enviar estado da janela ao redimensionar
+  mainWindow.on('move', sendWindowState); // Enviar estado da janela ao mover
 
   // Atalhos Extras
-  
+
   // Seta para esquerda -> ajustar para a metade esquerda
   globalShortcut.register('Ctrl+Alt+Left', () => {
     const { width, height } = screen.getPrimaryDisplay().workAreaSize;
@@ -76,9 +76,8 @@ function createMainWindow() {
     });
   });
 
-
-  // Janela de preview com atalho
-  globalShortcut.register('Ctrl+Shift+P', () => {
+// Janela de preview com atalho
+  globalShortcut.register('Ctrl+Shift+P', () => { // Atalho para preview
     if (previewWindow) {
       previewWindow.close();
       previewWindow = null;
@@ -92,26 +91,28 @@ function createMainWindow() {
           preload: path.join(__dirname, 'preload.js')
         }
       });
-      previewWindow.loadFile('preview.html');
-      previewWindow.on('closed', () => previewWindow = null);
+      
+      previewWindow.loadFile('preview.html'); // Carregar arquivo preview HTML
+      
+      previewWindow.on('closed', () => previewWindow = null); // Fechar janela de preview quando for fechada
 
-      previewWindow.once('ready-to-show', () => {
+      previewWindow.once('ready-to-show', () => { 
         if (lastImageData) {
-          previewWindow.webContents.send('preview-image', lastImageData.dataUrl);
+          previewWindow.webContents.send('preview-image', lastImageData.dataUrl); 
         }
       });
     }
   });
 }
 
-app.whenReady().then(createMainWindow);
+app.whenReady().then(createMainWindow); // Criar janela principal quando o app estiver pronto
 
-app.on('window-all-closed', () => {
+app.on('window-all-closed', () => { // Fechar app quando todas as janelas forem fechadas
   if (process.platform !== 'darwin') app.quit();
 });
 
 // IPC controles da janela
-ipcMain.on('window-control', (_e, action) => {
+ipcMain.on('window-control', (_e, action) => { // Controles da janela
   switch (action) {
     case 'minimize': mainWindow.minimize(); break;
     case 'maximize':
@@ -123,32 +124,37 @@ ipcMain.on('window-control', (_e, action) => {
 });
 
 // IPC abrir imagem
-ipcMain.handle('open-image-dialog', async () => {
+ipcMain.handle('open-image-dialog', async () => { // Abrir imagem
   const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
     filters: [{ name: 'Imagens', extensions: ['jpg', 'jpeg', 'png', 'gif'] }],
     properties: ['openFile']
   });
-  if (canceled || filePaths.length === 0) return null;
+  
+  if (canceled || filePaths.length === 0) return null; // Se cancelado ou nenhum arquivo selecionado, retornar null
 
-  const fsExtra = require('fs');
-  const filePath = filePaths[0];
+  const fsExtra = require('fs'); 
+  const filePath = filePaths[0]; 
   const stats = fsExtra.statSync(filePath);
   const ext = path.extname(filePath).toLowerCase().replace('.', '') || 'png';
   const dataUrl = `data:image/${ext};base64,${fsExtra.readFileSync(filePath).toString('base64')}`;
+
+  const { nativeImage } = require('electron'); 
+  const image = nativeImage.createFromPath(filePath);
+  const size = image.getSize(); // { width, height }
 
   const imageData = {
     path: filePath,
     name: path.basename(filePath),
     size: stats.size,
-    width: 0,
-    height: 0,
+    width: size.width,
+    height: size.height,
     dataUrl
   };
 
-  lastImageData = imageData;
+  lastImageData = imageData; // Guardar última imagem aberta
 
-  mainWindow.webContents.send('image-data', imageData);
-  if (previewWindow) previewWindow.webContents.send('preview-image', dataUrl);
+  mainWindow.webContents.send('image-data', imageData); // Enviar dados da imagem para a janela principal
+  if (previewWindow) previewWindow.webContents.send('preview-image', dataUrl); // Enviar dados da imagem para a janela de preview
 
   return imageData;
 });

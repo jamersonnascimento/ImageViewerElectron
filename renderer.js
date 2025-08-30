@@ -17,8 +17,9 @@ document.getElementById('openImage').addEventListener('click', async () => {
   document.getElementById('imageInfo').innerHTML = `
     <strong>Nome:</strong> ${imageData.name}<br>
     <strong>Caminho:</strong> ${imageData.path}<br>
-    <strong>Tamanho:</strong> ${(imageData.size / 1024).toFixed(1)} KB
-  `;
+    <strong>Tamanho:</strong> ${(imageData.size / 1024).toFixed(1)} KB<br>
+    <strong>Resolução:</strong> ${imageData.width}x${imageData.height}
+    `;
 
   document.getElementById('imagePreview').src = imageData.dataUrl;
 });

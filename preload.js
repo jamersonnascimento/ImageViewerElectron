@@ -1,6 +1,6 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer } = require('electron'); // Importar módulos do Electron
 
-contextBridge.exposeInMainWorld('electronAPI', {
+contextBridge.exposeInMainWorld('electronAPI', { //Expor API do Electron para a renderização
   minimize: () => ipcRenderer.send('window-control', 'minimize'),
   maximizeRestore: () => ipcRenderer.send('window-control', 'maximize'),
   close: () => ipcRenderer.send('window-control', 'close'),
