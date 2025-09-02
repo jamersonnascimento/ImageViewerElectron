@@ -14,12 +14,16 @@ document.getElementById('openImage').addEventListener('click', async () => {
   const imageData = await window.electronAPI.openImage();
   if (!imageData) return;
 
-  document.getElementById('imageInfo').innerHTML = `
+  const imageInfoElement = document.getElementById('imageInfo');
+  imageInfoElement.innerHTML = `
     <strong>Nome:</strong> ${imageData.name}<br>
     <strong>Caminho:</strong> ${imageData.path}<br>
     <strong>Tamanho:</strong> ${(imageData.size / 1024).toFixed(1)} KB<br>
     <strong>Resolução:</strong> ${imageData.width}x${imageData.height}
     `;
+  
+  // Mostrar o elemento imageInfo
+  imageInfoElement.style.display = 'block';
 
   document.getElementById('imagePreview').src = imageData.dataUrl;
 });

@@ -7,15 +7,16 @@ body {
 
 /* Barra de título */
 .titlebar {
-  background: linear-gradient(180deg,#2f3438 0%, #232629 100%);
+  background: linear-gradient(180deg, #2f3438 0%, #232629 100%);
   color: white;
   display: flex;
-  justify-content: space-between; /* título à esquerda, botões à direita */
+  justify-content: space-between;
+  /* título à esquerda, botões à direita */
   align-items: center;
   padding: 0 10px;
   height: 34px;
   -webkit-app-region: drag;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
 }
 
 .titlebar .title {
@@ -51,7 +52,7 @@ body {
 }
 
 .window-buttons button:hover {
-  background: rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.06);
   transform: translateY(-1px);
 }
 
@@ -61,7 +62,7 @@ body {
 }
 
 #close:hover {
-  background: rgba(255,80,80,0.16);
+  background: rgba(255, 80, 80, 0.16);
 }
 
 /* Área de conteúdo */
@@ -70,43 +71,95 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  height: calc(100vh - 120px);
+  /* Altura ajustada para deixar espaço para os botões */
+  overflow: auto;
+  /* Adiciona rolagem se necessário */
 }
 
-/* Botão "Abrir Imagem" */
-#openImage {
+.button-group {
+  margin-right: 26px;
+  margin-left: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  position: fixed;
+  bottom: 600px;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+#openImage,
+#previewImage,
+#closeImage {
   padding: 8px 14px;
-  background: linear-gradient(180deg,#6b7bff,#4f5de8);
+  /* personalize por botão */
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  box-shadow: 0 6px 18px rgba(79,93,232,0.18);
+  box-shadow: 0 6px 18px rgba(79, 93, 232, 0.18);
   transition: transform 0.12s ease, box-shadow 0.12s ease;
+  flex: 1 1 auto;
+  /* permite que eles se ajustem ao espaço disponível */
+  min-width: 120px;
 }
 
-#openImage:hover { transform: translateY(-2px); }
+#openImage {
+  background: linear-gradient(180deg, #1aa510, #0fc612);
+}
+
+#previewImage {
+  background: linear-gradient(180deg, #6b7bff, #4f5de8);
+}
+
+#closeImage {
+  background: linear-gradient(180deg, #b70f0f, #7e2f2f);
+}
+
+
+#openImage:hover {
+  transform: translateY(-2px);
+}
+
+#previewImage:hover {
+  transform: translateY(-2px);
+}
+
+#closeImage:hover {
+  transform: translateY(-2px);
+}
 
 /* Caixa com informações */
 #imageInfo {
-  margin-top: 440px; /* gostaria de colocar a imageInfo no fundo da tela */ 
+  margin-top: 15px;
   padding: 10px 12px;
   background: #16171a;
   border-radius: 8px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
   width: min(940px, 92%);
   color: #dfe8f8;
   word-break: break-word;
+  margin-bottom: 60px;
+  /* Espaço para os botões fixos */
+  margin-left: auto;
+  margin-right: auto;
+  display: none;
+  /* Oculto por padrão */
 }
 
 /* Imagem carregada */
 #imagePreview {
-  margin-top: -528px;
-  max-width: 92%;
+  max-width: 90%;
   max-height: 60vh;
   border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
   object-fit: contain;
   background: #0b0c0d;
+  margin: 0px 0;
+  margin-top: 30px;
 }
 
 #statusBar {
