@@ -7,6 +7,8 @@ contextBridge.exposeInMainWorld('electronAPI', { //Expor API do Electron para a 
 
   openImage: () => ipcRenderer.invoke('open-image-dialog'),
 
+  openPreview: () => ipcRenderer.send('open-preview'),
+
   onImageData: (cb) => ipcRenderer.on('image-data', (_e, data) => cb(data)),
 
   onPreviewImage: (cb) => ipcRenderer.on('preview-image', (_e, dataUrl) => cb(dataUrl)),

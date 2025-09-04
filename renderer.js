@@ -28,6 +28,11 @@ document.getElementById('openImage').addEventListener('click', async () => {
   document.getElementById('imagePreview').src = imageData.dataUrl;
 });
 
+// 
+document.getElementById('previewImage').addEventListener('click', () => {
+  window.electronAPI.openPreview();
+});
+
 window.electronAPI.onImageData((imageData) => {
   document.getElementById('imagePreview').src = imageData.dataUrl;
 });

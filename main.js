@@ -9,7 +9,7 @@ let lastImageData = null; // guarda a última imagem aberta
 
 function restoreWindowState() { // Restaurar estado da janela
   try {
-    return JSON.parse(fs.readFileSync(stateFile, 'utf8')); 
+    return JSON.parse(fs.readFileSync(stateFile, 'utf8'));
   } catch {
     return { width: 800, height: 600 };
   }
@@ -76,8 +76,10 @@ function createMainWindow() { // Criar janela principal
     });
   });
 
-// Janela de preview com atalho
-  globalShortcut.register('Ctrl+Shift+P', () => { // Atalho para preview
+  globalShortcut.register('Ctrl+Shift+P', togglePreviewWindow); // Atalho para pré-visualização
+};
+
+function togglePreviewWindow() {
     if (previewWindow) {
       previewWindow.close();
       previewWindow = null;
@@ -91,19 +93,18 @@ function createMainWindow() { // Criar janela principal
           preload: path.join(__dirname, 'preload.js')
         }
       });
-      
-      previewWindow.loadFile('preview.html'); // Carregar arquivo preview HTML
-      
-      previewWindow.on('closed', () => previewWindow = null); // Fechar janela de preview quando for fechada
 
-      previewWindow.once('ready-to-show', () => { 
+      previewWindow.loadFile('preview.html');
+
+      previewWindow.on('closed', () => previewWindow = null);
+
+      previewWindow.once('ready-to-show', () => {
         if (lastImageData) {
-          previewWindow.webContents.send('preview-image', lastImageData.dataUrl); 
+          previewWindow.webContents.send('preview-image', lastImageData.dataUrl);
         }
       });
     }
-  });
-}
+  };
 
 app.whenReady().then(createMainWindow); // Criar janela principal quando o app estiver pronto
 
@@ -123,22 +124,27 @@ ipcMain.on('window-control', (_e, action) => { // Controles da janela
   }
 });
 
+// IPC abrir preview
+ipcMain.on('open-preview', () => {
+  togglePreviewWindow();
+});
+
 // IPC abrir imagem
 ipcMain.handle('open-image-dialog', async () => { // Abrir imagem
   const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
     filters: [{ name: 'Imagens', extensions: ['jpg', 'jpeg', 'png', 'gif'] }],
     properties: ['openFile']
   });
-  
+
   if (canceled || filePaths.length === 0) return null; // Se cancelado ou nenhum arquivo selecionado, retornar null
 
-  const fsExtra = require('fs'); 
-  const filePath = filePaths[0]; 
+  const fsExtra = require('fs');
+  const filePath = filePaths[0];
   const stats = fsExtra.statSync(filePath);
   const ext = path.extname(filePath).toLowerCase().replace('.', '') || 'png';
   const dataUrl = `data:image/${ext};base64,${fsExtra.readFileSync(filePath).toString('base64')}`;
 
-  const { nativeImage } = require('electron'); 
+  const { nativeImage } = require('electron');
   const image = nativeImage.createFromPath(filePath);
   const size = image.getSize(); // { width, height }
 

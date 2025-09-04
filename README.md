@@ -61,21 +61,23 @@ photo-viewer-lite/
    git clone https://github.com/jamersonnascimento/ImageViewerElectron
 
 2. Instale as dependências:
-
-npm install
+  ```bash
+  npm install
 
 3. Rode o app:
+  ```bash	
+  npm start
 
-npm start
 
+---
 
 ## 📋 Checklist de requisitos
 
-✅ Janela sem moldura com barra de título customizada;
-✅ Botões de controle da janela funcionando via IPC;
-✅ Botão para abrir imagens com exibição de informações;
-✅ Janela de pré-visualização (Ctrl+Shift+P);
-✅ Persistência de posição e tamanho da janela;
-✅ Comunicação Renderer ↔ Main nos 3 sentidos;
-✅ Atalhos de organização da janela;
-✅ Status bar exibindo dimensões em tempo real;
+✅ Janela sem moldura com barra de título customizada
+✅ Botões de controle da janela funcionando via IPC
+✅ Botão para abrir imagens com exibição de informações
+✅ Janela de pré-visualização (Ctrl+Shift+P)
+✅ Persistência de posição e tamanho da janela
+✅ Comunicação Renderer ↔ Main nos 3 sentidos
+✅ Atalhos de organização da janela
+✅ Status bar exibindo dimensões em tempo real
