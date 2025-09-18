@@ -1,32 +1,49 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <meta charset="UTF-8">
-  <title>PhotoViewer Lite</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8"> <!-- Define a codificação como UTF-8, essencial para acentos e caracteres especiais -->
+  <title>PhotoViewer Lite</title> <!-- Título da aba/janela -->
+  <link rel="stylesheet" href="styles.css"> <!-- Importa o CSS externo para estilizar a interface -->
 </head>
+
 <body>
+  
+  <!-- Barra de título personalizada (imitando a barra nativa do sistema) -->
   <div class="titlebar">
-    <div class="title">PhotoViewer Lite</div>
-    <div class="window-buttons">
-      <button id="minimize">—</button>
-      <button id="maximize">⬜</button>
-      <button id="close">✕</button>
+    <div class="title">PhotoViewer Lite</div> <!-- Nome do app exibido na barra -->
+    <div class="window-buttons"> <!-- Botões de controle da janela -->
+      <button id="minimize">—</button> <!-- Minimiza a janela -->
+      <button id="maximize">⬜</button> <!-- Maximiza/restaura -->
+      <button id="close">✕</button> <!-- Fecha a janela -->
     </div>
-    <div id="statusBar"></div>
   </div>
+  <!-- Esses botões serão conectados ao processo principal do Electron via IPC para controlar a janela. -->
 
+  <!-- Barra de ferramentas com ações do app -->
+  <div class="toolbar">
+    <button id="openImage">Abrir Imagem</button> <!-- Botão para abrir uma imagem -->
+    <button id="previewImage">Pré-visualizar</button> <!-- Botão para mostrar preview -->
+    <button id="closeImage">Fechar Imagem</button> <!-- Botão para remover imagem da tela -->
+  </div>
+  <!-- Vai conectar eventos de clique com funções no renderer.js para manipular imagens. -->
+
+  <!-- Área principal de visualização da imagem -->
   <div class="content">
-    <img id="imagePreview" />
-    <div id="imageInfo"></div>
+    <div class="scroll-container"> <!-- Permite rolagem se a imagem for grande -->
+      <div class="image-container">
+        <img id="imagePreview" /> <!-- Onde a imagem será exibida -->
+      </div>
+      <div id="imageInfo"></div> <!-- Informações sobre a imagem (nome, tamanho, etc.) -->
+    </div>
   </div>
+  <!-- Vai exibir a imagem carregada e as informações sobre ela. -->
 
-   <div class="button-group">
-    <button id="openImage">Abrir Imagem</button>
-    <button id="previewImage">Pré-visualizar</button>
-    <button id="closeImage">Fechar Imagem</button>
-  </div>
+  <!-- Barra de status para mensagens do app -->
+  <div id="statusBar"></div> <!-- Pode mostrar mensagens como "Imagem carregada com sucesso" -->
 
-  <script src="renderer.js"></script>
+  <!-- Script principal que controla a lógica do app -->
+  <script src="renderer.js"></script> <!-- Arquivo JS que controla os eventos e lógica da interface -->
 </body>
+
 </html>

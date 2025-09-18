@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, globalShortcut, screen } = require('electron'); // Importar módulos do Electron
+const { app, BrowserWindow, ipcMain, dialog, globalShortcut, screen, nativeImage, Tray, Menu } = require('electron'); // Importar módulos do Electron
 const path = require('path'); // Importar módulo de caminho
 const fs = require('fs') // Importar módulo de filesystem
 
@@ -6,6 +6,7 @@ let mainWindow; // Janela principal
 let previewWindow;  // Janela de pré-visualização
 const stateFile = path.join(app.getPath('userData'), 'window-state.json'); // Arquivo para salvar estado da janela
 let lastImageData = null; // guarda a última imagem aberta
+let tray = null;
 
 function restoreWindowState() { // Restaurar estado da janela
   try {
@@ -34,7 +35,14 @@ function createMainWindow() { // Criar janela principal
 
   mainWindow.loadFile('index.html'); // Carregar arquivo HTML
 
-  mainWindow.on('close', saveWindowState); // Salvar estado da janela ao fechar
+  mainWindow.on('close', (event) => {
+  saveWindowState(); // sempre salva estado
+
+  if (!app.isQuitting) {
+    event.preventDefault(); // impede fechar
+    mainWindow.hide();      // apenas esconde
+  }
+})
 
   //  Broadcast window-state-updated
   const sendWindowState = () => { // Enviar estado da janela
@@ -106,7 +114,78 @@ function togglePreviewWindow() {
     }
   };
 
-app.whenReady().then(createMainWindow); // Criar janela principal quando o app estiver pronto
+ function createTray() {
+  // caminho do ícone local
+  const iconPath = path.join(__dirname, 'assets', 'icons', 'tray_icon_64x64.png');
+
+  // tenta carregar o ícone do arquivo; se não existir, usa um pequeno fallback base64
+  let icon;
+  if (fs.existsSync(iconPath)) {
+    icon = nativeImage.createFromPath(iconPath);
+  } else {
+    // fallback simples (PNG 16x16)
+    icon = nativeImage.createFromDataURL(
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAHklEQVR42mNgGAWjYBSMglEwCkbBqBgFo2AUjIIBAMwiB27rB5DzAAAAAElFTkSuQmCC'
+    );
+  }
+
+  // cria o tray
+  tray = new Tray(icon);
+  tray.setToolTip('PhotoViewer Lite');
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: 'Abrir Imagem',
+      type: 'normal',
+      click: async () => { 
+        try {
+          await openImageDialog();
+        } catch (error) {
+          console.error('Erro ao abrir imagem:', error);
+        }
+      }
+    },
+    {
+      label: 'Pré-visualização',
+      type: 'normal',
+      click: () => { if (typeof togglePreviewWindow === 'function') togglePreviewWindow(); }
+    },
+    { type: 'separator' },
+    {
+      label: 'Sair',
+      type: 'normal',
+      click: () => {
+        app.isQuitting = true;
+        app.quit();
+      }
+    }
+  ]);
+
+  tray.setContextMenu(contextMenu);
+
+  tray.on('click', () => {
+    if (!mainWindow) return;
+    if (mainWindow.isVisible()) mainWindow.hide();
+    else mainWindow.show();
+  });
+
+  // opcional: cleanup ao sair (garantir que o tray seja destruído)
+  app.on('before-quit', () => {
+    if (tray) {
+      tray.destroy();
+      tray = null;
+    }
+  });
+}
+
+
+// 2. INICIALIZAÇÃO PRINCIPAL DO APP
+// Esta é a única chamada de whenReady necessária.
+app.whenReady().then(() => {
+  createMainWindow(); // Primeiro, cria a janela principal
+  createTray();       // Depois, cria o Tray
+  // Todos os outros inicializadores (como globalShortcut) já estão dentro de createMainWindow
+});
 
 app.on('window-all-closed', () => { // Fechar app quando todas as janelas forem fechadas
   if (process.platform !== 'darwin') app.quit();
@@ -130,7 +209,13 @@ ipcMain.on('open-preview', () => {
 });
 
 // IPC abrir imagem
-ipcMain.handle('open-image-dialog', async () => { // Abrir imagem
+// Função para abrir imagem (pode ser chamada tanto pelo IPC quanto pelo tray)
+async function openImageDialog() {
+  // Garantir que a janela principal existe
+  if (!mainWindow) {
+    createMainWindow();
+  }
+
   const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
     filters: [{ name: 'Imagens', extensions: ['jpg', 'jpeg', 'png', 'gif'] }],
     properties: ['openFile']
@@ -159,8 +244,16 @@ ipcMain.handle('open-image-dialog', async () => { // Abrir imagem
 
   lastImageData = imageData; // Guardar última imagem aberta
 
+  // Mostrar a janela principal se ela estiver oculta
+  if (mainWindow && !mainWindow.isVisible()) {
+    mainWindow.show();
+  }
+
   mainWindow.webContents.send('image-data', imageData); // Enviar dados da imagem para a janela principal
   if (previewWindow) previewWindow.webContents.send('preview-image', dataUrl); // Enviar dados da imagem para a janela de preview
 
   return imageData;
-});
+}
+
+// Handler IPC para abrir imagem
+ipcMain.handle('open-image-dialog', openImageDialog);

@@ -1,8 +1,16 @@
+html, body {
+  height: 100%;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
 body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  margin: 0;
   background: #121214;
   color: #e6eef8;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Barra de título */
@@ -11,12 +19,12 @@ body {
   color: white;
   display: flex;
   justify-content: space-between;
-  /* título à esquerda, botões à direita */
   align-items: center;
   padding: 0 10px;
   height: 34px;
   -webkit-app-region: drag;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  flex-shrink: 0; /* Impede que a titlebar encolha */
 }
 
 .titlebar .title {
@@ -65,74 +73,89 @@ body {
   background: rgba(255, 80, 80, 0.16);
 }
 
-/* Área de conteúdo */
-.content {
-  padding: 18px;
+/* Barra de botões */
+.toolbar {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: calc(100vh - 120px);
-  /* Altura ajustada para deixar espaço para os botões */
-  overflow: auto;
-  /* Adiciona rolagem se necessário */
-}
-
-.button-group {
-  margin-right: 26px;
-  margin-left: 16px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
   justify-content: center;
-  position: fixed;
-  bottom: 600px;
-  left: 0;
-  right: 0;
-  z-index: 100;
+  gap: 16px;
+  padding: 12px;
+  background: transparent;
+  border-bottom: 1px solid #1f1f1f;
+  flex-shrink: 0; /* Impede que a toolbar encolha */
 }
 
-#openImage,
-#previewImage,
-#closeImage {
-  padding: 8px 14px;
-  /* personalize por botão */
-  color: white;
+.toolbar button {
+  padding: 10px 16px;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  box-shadow: 0 6px 18px rgba(79, 93, 232, 0.18);
+  font-weight: 600;
+  color: white;
   transition: transform 0.12s ease, box-shadow 0.12s ease;
-  flex: 1 1 auto;
-  /* permite que eles se ajustem ao espaço disponível */
   min-width: 120px;
 }
 
+/* Estilos individuais */
 #openImage {
   background: linear-gradient(180deg, #1aa510, #0fc612);
 }
-
 #previewImage {
   background: linear-gradient(180deg, #6b7bff, #4f5de8);
 }
-
 #closeImage {
   background: linear-gradient(180deg, #b70f0f, #7e2f2f);
 }
 
-
-#openImage:hover {
+.toolbar button:hover {
   transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
 }
 
-#previewImage:hover {
-  transform: translateY(-2px);
+/* Área de conteúdo principal */
+.content {
+  flex: 1; /* Ocupa todo o espaço restante */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden; /* Esconde overflow geral */
+  padding: 18px;
+  box-sizing: border-box;
+  position: relative;
 }
 
-#closeImage:hover {
-  transform: translateY(-2px);
+/* Container scrollável */
+.scroll-container {
+  width: 100%;
+  flex: 1;
+  overflow-y: auto; /* Rolagem vertical apenas quando necessário */
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 10px;
 }
 
-/* Caixa com informações */
+/* Container da imagem */
+.image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-height: 70vh;
+  margin-bottom: 20px;
+}
+
+/* Imagem */
+#imagePreview {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  object-fit: contain;
+  background: #0b0c0d;
+}
+
+/* Caixa com informações - agora dentro do fluxo normal */
 #imageInfo {
   margin-top: 15px;
   padding: 10px 12px;
@@ -142,26 +165,10 @@ body {
   width: min(940px, 92%);
   color: #dfe8f8;
   word-break: break-word;
-  margin-bottom: 60px;
-  /* Espaço para os botões fixos */
-  margin-left: auto;
-  margin-right: auto;
   display: none;
-  /* Oculto por padrão */
 }
 
-/* Imagem carregada */
-#imagePreview {
-  max-width: 90%;
-  max-height: 60vh;
-  border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-  object-fit: contain;
-  background: #0b0c0d;
-  margin: 0px 0;
-  margin-top: 30px;
-}
-
+/* Status bar */
 #statusBar {
   position: fixed;
   bottom: 0;
@@ -174,4 +181,24 @@ body {
   border-top: 1px solid #333;
   text-align: right;
   font-family: monospace;
+  z-index: 1000;
+}
+
+/* Personalização da barra de rolagem */
+.scroll-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scroll-container::-webkit-scrollbar-track {
+  background: #1a1a1a;
+  border-radius: 4px;
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+
+.scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
