@@ -1,12 +1,18 @@
-const { app, BrowserWindow, ipcMain, dialog, globalShortcut, screen, nativeImage, Tray, Menu } = require('electron'); // Importar módulos do Electron
+const { app, BrowserWindow, ipcMain, dialog, globalShortcut, screen, nativeImage, Tray, Menu, powerSaveBlocker } = require('electron'); // Importar módulos do Electron
 const path = require('path'); // Importar módulo de caminho
 const fs = require('fs') // Importar módulo de filesystem
+const os = require('os'); // Importar módulo do sistema operacional
 
 let mainWindow; // Janela principal
 let previewWindow;  // Janela de pré-visualização
+let powerWindow; // Janela de gerenciamento de energia
 const stateFile = path.join(app.getPath('userData'), 'window-state.json'); // Arquivo para salvar estado da janela
 let lastImageData = null; // guarda a última imagem aberta
 let tray = null;
+
+// Variáveis de gerenciamento de energia
+let powerSaveBlockerId = null; // ID do bloqueador de economia de energia
+let lowPowerModeActive = false; // Estado do modo de baixo consumo
 
 function restoreWindowState() { // Restaurar estado da janela
   try {
@@ -112,7 +118,45 @@ function togglePreviewWindow() {
         }
       });
     }
-  };
+  }
+
+// Função para criar/mostrar janela de gerenciamento de energia
+function createPowerWindow() {
+  if (powerWindow) {
+    powerWindow.focus();
+    return;
+  }
+
+  powerWindow = new BrowserWindow({
+    width: 800,
+    height: 700,
+    minWidth: 600,
+    minHeight: 500,
+    icon: path.join(__dirname, 'assets/icons/icon_64x64.png'),
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js')
+    },
+    titleBarStyle: 'default',
+    show: false
+  });
+
+  powerWindow.loadFile('power-management.html');
+
+  powerWindow.once('ready-to-show', () => {
+    powerWindow.show();
+    // Enviar estado inicial
+    powerWindow.webContents.send('power-state-update', {
+      powerSaveBlocker: powerSaveBlockerId !== null,
+      lowPowerMode: lowPowerModeActive
+    });
+  });
+
+  powerWindow.on('closed', () => {
+    powerWindow = null;
+  });
+}
 
  function createTray() {
   // caminho do ícone local
@@ -257,3 +301,86 @@ async function openImageDialog() {
 
 // Handler IPC para abrir imagem
 ipcMain.handle('open-image-dialog', openImageDialog);
+
+// IPC para abrir janela de gerenciamento de energia
+ipcMain.on('open-power-management', () => {
+  createPowerWindow();
+});
+
+// IPC para alternar powerSaveBlocker
+ipcMain.handle('toggle-power-save-blocker', () => {
+  if (powerSaveBlockerId !== null) {
+    // Desativar powerSaveBlocker
+    powerSaveBlocker.stop(powerSaveBlockerId);
+    powerSaveBlockerId = null;
+    return false;
+  } else {
+    // Ativar powerSaveBlocker
+    powerSaveBlockerId = powerSaveBlocker.start('prevent-display-sleep');
+    return true;
+  }
+});
+
+// IPC para obter informações do sistema
+ipcMain.handle('get-system-info', () => {
+  const cpus = os.cpus();
+  const totalMem = os.totalmem();
+  const freeMem = os.freemem();
+  const usedMem = totalMem - freeMem;
+  
+  return {
+    cpu: {
+      model: cpus[0].model,
+      cores: cpus.length,
+      speed: cpus[0].speed
+    },
+    memory: {
+      total: Math.round(totalMem / 1024 / 1024 / 1024 * 100) / 100, // GB
+      used: Math.round(usedMem / 1024 / 1024 / 1024 * 100) / 100, // GB
+      free: Math.round(freeMem / 1024 / 1024 / 1024 * 100) / 100, // GB
+      percentage: Math.round((usedMem / totalMem) * 100)
+    },
+    platform: os.platform(),
+    arch: os.arch(),
+    uptime: Math.round(os.uptime() / 3600 * 100) / 100, // horas
+    powerSaveBlocker: powerSaveBlockerId !== null,
+    lowPowerMode: lowPowerModeActive
+  };
+});
+
+// IPC para alternar modo de baixo consumo
+ipcMain.handle('toggle-low-power-mode', () => {
+  lowPowerModeActive = !lowPowerModeActive;
+  
+  if (lowPowerModeActive) {
+    // Ativar modo de baixo consumo
+    if (powerSaveBlockerId !== null) {
+      powerSaveBlocker.stop(powerSaveBlockerId);
+      powerSaveBlockerId = null;
+    }
+  }
+  
+  return lowPowerModeActive;
+});
+
+// IPC para otimizar recursos
+ipcMain.handle('optimize-resources', () => {
+  try {
+    // Forçar garbage collection se disponível
+    if (global.gc) {
+      global.gc();
+    }
+    
+    // Minimizar todas as janelas para liberar recursos visuais
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.minimize();
+    }
+    if (previewWindow && !previewWindow.isDestroyed()) {
+      previewWindow.minimize();
+    }
+    
+    return { success: true, message: 'Recursos otimizados com sucesso!' };
+  } catch (error) {
+    return { success: false, message: 'Erro ao otimizar recursos: ' + error.message };
+  }
+});

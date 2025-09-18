@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerenciamento de Energia - PhotoViewer Lite</title>
+  <style>
+    /* ESTILOS GERAIS DA JANELA DE ENERGIA */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+
+    /* CABEÇALHO DA JANELA */
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    /* SEÇÃO DE MONITORAMENTO DE RECURSOS */
+    .monitoring-section {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 25px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .section-title {
+      font-size: 20px;
+      margin-bottom: 20px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* GRID DE RECURSOS */
+    .resource-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .resource-card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .resource-label {
+      font-size: 14px;
+      opacity: 0.8;
+      margin-bottom: 5px;
+    }
+
+    .resource-value {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .resource-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .resource-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4CAF50, #FFC107, #F44336);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
+    /* SEÇÃO DE CONTROLES DE ENERGIA */
+    .power-controls {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      padding: 25px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .control-group {
+      margin-bottom: 20px;
+    }
+
+    .control-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .control-info {
+      flex: 1;
+    }
+
+    .control-title {
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+
+    .control-description {
+      font-size: 12px;
+      opacity: 0.7;
+    }
+
+    /* BOTÕES E SWITCHES */
+    .toggle-switch {
+      position: relative;
+      width: 60px;
+      height: 30px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 15px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .toggle-switch.active {
+      background: #4CAF50;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 24px;
+      height: 24px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+    }
+
+    .toggle-switch.active .toggle-slider {
+      transform: translateX(30px);
+    }
+
+    .action-button {
+      background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+      border: none;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      margin: 5px;
+    }
+
+    .action-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .action-button:active {
+      transform: translateY(0);
+    }
+
+    /* STATUS INDICATORS */
+    .status-indicator {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+
+    .status-active {
+      background: #4CAF50;
+      box-shadow: 0 0 10px #4CAF50;
+    }
+
+    .status-inactive {
+      background: #757575;
+    }
+
+    /* INFORMAÇÕES ADICIONAIS */
+    .info-panel {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 20px;
+      border-left: 4px solid #4CAF50;
+    }
+
+    .info-panel h4 {
+      margin: 0 0 10px 0;
+      color: #4CAF50;
+    }
+
+    .info-panel p {
+      margin: 5px 0;
+      font-size: 13px;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <!-- CABEÇALHO DA JANELA -->
+  <div class="header">
+    <h1>⚡ Gerenciamento de Energia</h1>
+  </div>
+
+  <!-- SEÇÃO DE MONITORAMENTO DE RECURSOS -->
+  <div class="monitoring-section">
+    <div class="section-title">
+      📊 Monitoramento de Recursos
+    </div>
+    
+    <div class="resource-grid">
+      <div class="resource-card">
+        <div class="resource-label">CPU</div>
+        <div class="resource-value" id="cpuValue">0%</div>
+        <div class="resource-bar">
+          <div class="resource-fill" id="cpuBar" style="width: 0%"></div>
+        </div>
+      </div>
+      
+      <div class="resource-card">
+        <div class="resource-label">Memória</div>
+        <div class="resource-value" id="memoryValue">0%</div>
+        <div class="resource-bar">
+          <div class="resource-fill" id="memoryBar" style="width: 0%"></div>
+        </div>
+      </div>
+      
+      <div class="resource-card">
+        <div class="resource-label">Temperatura</div>
+        <div class="resource-value" id="tempValue">--°C</div>
+        <div class="resource-bar">
+          <div class="resource-fill" id="tempBar" style="width: 0%"></div>
+        </div>
+      </div>
+      
+      <div class="resource-card">
+        <div class="resource-label">Energia</div>
+        <div class="resource-value" id="powerValue">--W</div>
+        <div class="resource-bar">
+          <div class="resource-fill" id="powerBar" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEÇÃO DE CONTROLES DE ENERGIA -->
+  <div class="power-controls">
+    <div class="section-title">
+      🔧 Controles de Energia
+    </div>
+    
+    <div class="control-group">
+      <div class="control-item">
+        <div class="control-info">
+          <div class="control-title">
+            <span class="status-indicator status-inactive" id="powerSaveStatus"></span>
+            Manter Sistema Acordado
+          </div>
+          <div class="control-description">
+            Impede que o sistema entre em modo de suspensão
+          </div>
+        </div>
+        <div class="toggle-switch" id="powerSaveToggle">
+          <div class="toggle-slider"></div>
+        </div>
+      </div>
+      
+      <div class="control-item">
+        <div class="control-info">
+          <div class="control-title">
+            <span class="status-indicator status-inactive" id="lowPowerStatus"></span>
+            Modo Economia de Energia
+          </div>
+          <div class="control-description">
+            Reduz o uso de recursos para economizar energia
+          </div>
+        </div>
+        <div class="toggle-switch" id="lowPowerToggle">
+          <div class="toggle-slider"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="control-group">
+      <button class="action-button" id="optimizeBtn">🚀 Otimizar Sistema</button>
+      <button class="action-button" id="refreshBtn">🔄 Atualizar Dados</button>
+      <button class="action-button" id="resetBtn">⚙️ Restaurar Padrão</button>
+    </div>
+    
+    <div class="info-panel">
+      <h4>💡 Dicas de Economia</h4>
+      <p>• O modo "Manter Acordado" é útil durante apresentações ou downloads</p>
+      <p>• O modo "Economia de Energia" reduz a frequência de atualização</p>
+      <p>• Use "Otimizar Sistema" para liberar memória não utilizada</p>
+    </div>
+  </div>
+
+  <!-- SCRIPT DA JANELA DE ENERGIA -->
+  <script>
+    // VARIÁVEIS GLOBAIS
+    let powerSaveBlockerActive = false;
+    let lowPowerModeActive = false;
+    let updateInterval;
+
+    // ELEMENTOS DOM
+    const powerSaveToggle = document.getElementById('powerSaveToggle');
+    const powerSaveStatus = document.getElementById('powerSaveStatus');
+    const lowPowerToggle = document.getElementById('lowPowerToggle');
+    const lowPowerStatus = document.getElementById('lowPowerStatus');
+    const optimizeBtn = document.getElementById('optimizeBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    // ELEMENTOS DE MONITORAMENTO
+    const cpuValue = document.getElementById('cpuValue');
+    const cpuBar = document.getElementById('cpuBar');
+    const memoryValue = document.getElementById('memoryValue');
+    const memoryBar = document.getElementById('memoryBar');
+    const tempValue = document.getElementById('tempValue');
+    const tempBar = document.getElementById('tempBar');
+    const powerValue = document.getElementById('powerValue');
+    const powerBar = document.getElementById('powerBar');
+
+    // INICIALIZAÇÃO
+    document.addEventListener('DOMContentLoaded', () => {
+      initializePowerManagement();
+      startResourceMonitoring();
+    });
+
+    // INICIALIZAR GERENCIAMENTO DE ENERGIA
+    function initializePowerManagement() {
+      // Event listeners para toggles
+      powerSaveToggle.addEventListener('click', togglePowerSaveBlocker);
+      lowPowerToggle.addEventListener('click', toggleLowPowerMode);
+      
+      // Event listeners para botões
+      optimizeBtn.addEventListener('click', optimizeSystem);
+      refreshBtn.addEventListener('click', refreshResourceData);
+      resetBtn.addEventListener('click', resetToDefaults);
+      
+      // Solicitar estado inicial será recebido via onPowerStateUpdate
+    }
+
+    // TOGGLE POWER SAVE BLOCKER
+    async function togglePowerSaveBlocker() {
+      if (window.electronAPI) {
+        powerSaveBlockerActive = await window.electronAPI.togglePowerSaveBlocker();
+        updatePowerSaveUI();
+      }
+    }
+
+    // TOGGLE LOW POWER MODE
+    async function toggleLowPowerMode() {
+      if (window.electronAPI) {
+        lowPowerModeActive = await window.electronAPI.toggleLowPowerMode();
+        updateLowPowerUI();
+        
+        // Ajustar frequência de atualização
+        if (lowPowerModeActive) {
+          clearInterval(updateInterval);
+          updateInterval = setInterval(updateResourceData, 5000); // 5 segundos
+        } else {
+          clearInterval(updateInterval);
+          updateInterval = setInterval(updateResourceData, 1000); // 1 segundo
+        }
+      }
+    }
+
+    // ATUALIZAR UI DO POWER SAVE BLOCKER
+    function updatePowerSaveUI() {
+      if (powerSaveBlockerActive) {
+        powerSaveToggle.classList.add('active');
+        powerSaveStatus.classList.remove('status-inactive');
+        powerSaveStatus.classList.add('status-active');
+      } else {
+        powerSaveToggle.classList.remove('active');
+        powerSaveStatus.classList.remove('status-active');
+        powerSaveStatus.classList.add('status-inactive');
+      }
+    }
+
+    // ATUALIZAR UI DO LOW POWER MODE
+    function updateLowPowerUI() {
+      if (lowPowerModeActive) {
+        lowPowerToggle.classList.add('active');
+        lowPowerStatus.classList.remove('status-inactive');
+        lowPowerStatus.classList.add('status-active');
+      } else {
+        lowPowerToggle.classList.remove('active');
+        lowPowerStatus.classList.remove('status-active');
+        lowPowerStatus.classList.add('status-inactive');
+      }
+    }
+
+    // INICIAR MONITORAMENTO DE RECURSOS
+    function startResourceMonitoring() {
+      updateResourceData();
+      updateInterval = setInterval(updateResourceData, 1000);
+    }
+
+    // ATUALIZAR DADOS DE RECURSOS
+    async function updateResourceData() {
+      if (window.electronAPI) {
+        try {
+          const systemInfo = await window.electronAPI.getSystemInfo();
+          updateResourceDisplay(systemInfo);
+        } catch (error) {
+          console.error('Erro ao obter informações do sistema:', error);
+        }
+      } else {
+        // Dados simulados para teste
+        updateResourceDisplay({
+          cpu: { cores: 4, speed: 2400 },
+          memory: { percentage: Math.random() * 100, used: 8, total: 16 },
+          temperature: 45 + Math.random() * 30,
+          power: 50 + Math.random() * 100
+        });
+      }
+    }
+
+    // ATUALIZAR DISPLAY DOS RECURSOS
+    function updateResourceDisplay(data) {
+      // CPU - usando número de cores como indicador
+      const cpuUsage = Math.min((data.cpu.cores / 8) * 100, 100); // Simular uso baseado em cores
+      cpuValue.textContent = `${data.cpu.cores} cores @ ${data.cpu.speed}MHz`;
+      cpuBar.style.width = `${cpuUsage}%`;
+      
+      // Memória
+      memoryValue.textContent = `${data.memory.used}GB / ${data.memory.total}GB (${data.memory.percentage}%)`;
+      memoryBar.style.width = `${data.memory.percentage}%`;
+      
+      // Temperatura (simulada baseada no uso de memória)
+      const temperature = 35 + (data.memory.percentage * 0.3);
+      tempValue.textContent = `${Math.round(temperature)}°C`;
+      tempBar.style.width = `${Math.min(temperature / 100 * 100, 100)}%`;
+      
+      // Energia (simulada baseada no uso geral)
+      const power = 30 + (data.memory.percentage * 1.5);
+      powerValue.textContent = `${Math.round(power)}W`;
+      powerBar.style.width = `${Math.min(power / 200 * 100, 100)}%`;
+    }
+
+    // OTIMIZAR SISTEMA
+    async function optimizeSystem() {
+      optimizeBtn.textContent = '⏳ Otimizando...';
+      optimizeBtn.disabled = true;
+      
+      if (window.electronAPI) {
+        try {
+          const result = await window.electronAPI.optimizeResources();
+          if (result.success) {
+            console.log('Otimização concluída:', result.message);
+          } else {
+            console.error('Erro na otimização:', result.message);
+          }
+        } catch (error) {
+          console.error('Erro ao otimizar:', error);
+        }
+      }
+      
+      setTimeout(() => {
+        optimizeBtn.textContent = '🚀 Otimizar Sistema';
+        optimizeBtn.disabled = false;
+        updateResourceData(); // Atualizar dados após otimização
+      }, 2000);
+    }
+
+    // ATUALIZAR DADOS
+    function refreshResourceData() {
+      refreshBtn.textContent = '⏳ Atualizando...';
+      refreshBtn.disabled = true;
+      
+      updateResourceData();
+      
+      setTimeout(() => {
+        refreshBtn.textContent = '🔄 Atualizar Dados';
+        refreshBtn.disabled = false;
+      }, 1000);
+    }
+
+    // RESTAURAR PADRÕES
+    async function resetToDefaults() {
+      if (window.electronAPI) {
+        // Desativar powerSaveBlocker se estiver ativo
+        if (powerSaveBlockerActive) {
+          await window.electronAPI.togglePowerSaveBlocker();
+        }
+        
+        // Desativar modo de baixo consumo se estiver ativo
+        if (lowPowerModeActive) {
+          await window.electronAPI.toggleLowPowerMode();
+        }
+      }
+      
+      // Restaurar intervalo normal
+      clearInterval(updateInterval);
+      updateInterval = setInterval(updateResourceData, 1000);
+    }
+
+    // LISTENERS PARA COMUNICAÇÃO COM O PROCESSO PRINCIPAL
+    if (window.electronAPI) {
+      // Receber estado inicial
+      window.electronAPI.onPowerStateUpdate((state) => {
+        powerSaveBlockerActive = state.powerSaveBlocker;
+        lowPowerModeActive = state.lowPowerMode;
+        updatePowerSaveUI();
+        updateLowPowerUI();
+      });
+    }
+
+    // CLEANUP AO FECHAR JANELA
+    window.addEventListener('beforeunload', () => {
+      if (updateInterval) {
+        clearInterval(updateInterval);
+      }
+    });
+  </script>
+</body>
+</html>

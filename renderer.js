@@ -14,6 +14,7 @@ document.getElementById('close').addEventListener('click', () => {
 // Elementos DOM
 const imageInfoElement = document.getElementById('imageInfo');
 const imagePreviewElement = document.getElementById('imagePreview');
+const imageContainer = document.querySelector('.image-container');
 const statusBar = document.getElementById('statusBar');
 
 // Abrir imagem
@@ -44,6 +45,11 @@ document.getElementById('closeImage').addEventListener('click', () => {
   imagePreviewElement.src = '';
   imageInfoElement.style.display = 'none';
   adjustLayout(); // Ajustar layout após remover imagem
+})
+
+// Gerenciamento de energia
+document.getElementById('powerManagement').addEventListener('click', () => {
+  window.electronAPI.openPowerManagement();
 });
 
 // Listeners de eventos do Electron
