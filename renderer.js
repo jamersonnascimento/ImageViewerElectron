@@ -52,9 +52,38 @@ document.getElementById('powerManagement').addEventListener('click', () => {
   window.electronAPI.openPowerManagement();
 });
 
+// Navegação entre imagens
+document.getElementById('nextImage').addEventListener('click', () => {
+  window.electronAPI.nextImage();
+});
+
+document.getElementById('prevImage').addEventListener('click', () => {
+  window.electronAPI.previousImage();
+});
+
+// Atalhos de teclado para navegação
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'ArrowRight') {
+    window.electronAPI.nextImage();
+  } else if (event.key === 'ArrowLeft') {
+    window.electronAPI.previousImage();
+  }
+});
+
 // Listeners de eventos do Electron
 window.electronAPI.onImageData((imageData) => {
   imagePreviewElement.src = imageData.dataUrl;
+  
+  // Atualizar informações da imagem
+  imageInfoElement.innerHTML = `
+    <strong>Nome:</strong> ${imageData.name}<br>
+    <strong>Caminho:</strong> ${imageData.path}<br>
+    <strong>Tamanho:</strong> ${(imageData.size / 1024).toFixed(1)} KB<br>
+    <strong>Resolução:</strong> ${imageData.width}x${imageData.height}
+  `;
+  
+  imageInfoElement.style.display = 'block';
+  adjustLayout(); // Ajustar layout após carregar imagem
 });
 
 window.electronAPI.onWindowState((bounds) => {
@@ -68,6 +97,7 @@ function adjustLayout() {
   
   if (hasImage) {
     imageContainer.style.display = 'flex';
+    imageContainer.classList.add('has-image');
     imageInfoElement.style.display = 'block';
     
     // Habilita rolagem apenas se o conteúdo for maior que o container
@@ -81,6 +111,7 @@ function adjustLayout() {
     }
   } else {
     imageContainer.style.display = 'none';
+    imageContainer.classList.remove('has-image');
     imageInfoElement.style.display = 'none';
     scrollContainer.style.overflowY = 'hidden';
   }

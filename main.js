@@ -9,6 +9,8 @@ let powerWindow; // Janela de gerenciamento de energia
 const stateFile = path.join(app.getPath('userData'), 'window-state.json'); // Arquivo para salvar estado da janela
 let lastImageData = null; // guarda a última imagem aberta
 let tray = null;
+let currentImageIndex = 0; // índice da imagem atual
+let imagesInFolder = []; // lista de imagens na pasta atual
 
 // Variáveis de gerenciamento de energia
 let powerSaveBlockerId = null; // ID do bloqueador de economia de energia
@@ -18,21 +20,43 @@ function restoreWindowState() { // Restaurar estado da janela
   try {
     return JSON.parse(fs.readFileSync(stateFile, 'utf8'));
   } catch {
-    return { width: 800, height: 600 };
+    return { 
+      width: 800, 
+      height: 600,
+      x: undefined,
+      y: undefined,
+      isMaximized: false
+    };
   }
 }
 
 function saveWindowState() { // Salvar estado da janela
   if (!mainWindow) return;
   const bounds = mainWindow.getBounds();
-  fs.writeFileSync(stateFile, JSON.stringify(bounds));
+  const { workAreaSize } = screen.getPrimaryDisplay();
+  
+  // Verificar se está maximizada (Electron) ou ocupando toda área de trabalho
+  const isMaximized = mainWindow.isMaximized() || 
+    (bounds.x === 0 && bounds.y === 0 && 
+     bounds.width === workAreaSize.width && 
+     bounds.height === workAreaSize.height);
+  
+  const windowState = {
+    ...bounds,
+    isMaximized: isMaximized
+  };
+  
+  fs.writeFileSync(stateFile, JSON.stringify(windowState));
 }
 
 function createMainWindow() { // Criar janela principal
   const state = restoreWindowState();
 
+  // Separar o estado de maximização das dimensões da janela
+  const { isMaximized, ...windowBounds } = state;
+
   mainWindow = new BrowserWindow({ // Criar janela principal
-    ...state,
+    ...windowBounds,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
     },
@@ -40,6 +64,18 @@ function createMainWindow() { // Criar janela principal
   });
 
   mainWindow.loadFile('index.html'); // Carregar arquivo HTML
+
+  // Restaurar estado de maximização após a janela ser criada
+  if (isMaximized) {
+    // Usar área de trabalho disponível ao invés de maximize() para respeitar a barra de tarefas
+    const { workAreaSize } = screen.getPrimaryDisplay();
+    mainWindow.setBounds({
+      x: 0,
+      y: 0,
+      width: workAreaSize.width,
+      height: workAreaSize.height
+    });
+  }
 
   mainWindow.on('close', (event) => {
   saveWindowState(); // sempre salva estado
@@ -59,6 +95,10 @@ function createMainWindow() { // Criar janela principal
 
   mainWindow.on('resize', sendWindowState); // Enviar estado da janela ao redimensionar
   mainWindow.on('move', sendWindowState); // Enviar estado da janela ao mover
+  
+  // Salvar estado quando maximizar ou restaurar
+  mainWindow.on('maximize', saveWindowState);
+  mainWindow.on('unmaximize', saveWindowState);
 
   // Atalhos Extras
 
@@ -74,9 +114,25 @@ function createMainWindow() { // Criar janela principal
     mainWindow.setBounds({ x: width / 2, y: 0, width: width / 2, height });
   });
 
-  // Seta para cima -> maximizar janela
+  // Seta para cima -> maximizar janela (respeitando área de trabalho)
   globalShortcut.register('Ctrl+Alt+Up', () => {
-    if (!mainWindow.isMaximized()) mainWindow.maximize();
+    const bounds = mainWindow.getBounds();
+    const { workAreaSize } = screen.getPrimaryDisplay();
+    
+    // Verificar se já está maximizada
+    const isMaximized = mainWindow.isMaximized() || 
+      (bounds.x === 0 && bounds.y === 0 && 
+       bounds.width === workAreaSize.width && 
+       bounds.height === workAreaSize.height);
+    
+    if (!isMaximized) {
+      mainWindow.setBounds({
+        x: 0,
+        y: 0,
+        width: workAreaSize.width,
+        height: workAreaSize.height
+      });
+    }
   });
 
   // Seta para baixo -> restaurar tamanho padrão centralizado
@@ -247,6 +303,25 @@ ipcMain.on('window-control', (_e, action) => { // Controles da janela
   }
 });
 
+// Função para detectar todas as imagens na pasta
+function getImagesInFolder(imagePath) {
+  const folderPath = path.dirname(imagePath);
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'];
+  
+  try {
+    const files = fs.readdirSync(folderPath);
+    const imageFiles = files.filter(file => {
+      const ext = path.extname(file).toLowerCase();
+      return imageExtensions.includes(ext);
+    }).map(file => path.join(folderPath, file));
+    
+    return imageFiles.sort(); // Ordenar alfabeticamente
+  } catch (error) {
+    console.error('Erro ao ler pasta:', error);
+    return [];
+  }
+}
+
 // IPC abrir preview
 ipcMain.on('open-preview', () => {
   togglePreviewWindow();
@@ -288,6 +363,10 @@ async function openImageDialog() {
 
   lastImageData = imageData; // Guardar última imagem aberta
 
+  // Detectar todas as imagens na pasta
+  imagesInFolder = getImagesInFolder(filePath);
+  currentImageIndex = imagesInFolder.indexOf(filePath);
+
   // Mostrar a janela principal se ela estiver oculta
   if (mainWindow && !mainWindow.isVisible()) {
     mainWindow.show();
@@ -299,8 +378,59 @@ async function openImageDialog() {
   return imageData;
 }
 
+// Função para carregar uma imagem específica
+async function loadImageByPath(imagePath) {
+  if (!fs.existsSync(imagePath)) return null;
+
+  const fsExtra = require('fs');
+  const stats = fsExtra.statSync(imagePath);
+  const ext = path.extname(imagePath).toLowerCase().replace('.', '') || 'png';
+  const dataUrl = `data:image/${ext};base64,${fsExtra.readFileSync(imagePath).toString('base64')}`;
+
+  const { nativeImage } = require('electron');
+  const image = nativeImage.createFromPath(imagePath);
+  const size = image.getSize();
+
+  const imageData = {
+    path: imagePath,
+    name: path.basename(imagePath),
+    size: stats.size,
+    width: size.width,
+    height: size.height,
+    dataUrl
+  };
+
+  lastImageData = imageData;
+  mainWindow.webContents.send('image-data', imageData);
+  if (previewWindow) previewWindow.webContents.send('preview-image', dataUrl);
+
+  return imageData;
+}
+
+// Função para navegar para próxima imagem
+function nextImage() {
+  if (imagesInFolder.length === 0) return;
+  
+  currentImageIndex = (currentImageIndex + 1) % imagesInFolder.length;
+  const nextImagePath = imagesInFolder[currentImageIndex];
+  loadImageByPath(nextImagePath);
+}
+
+// Função para navegar para imagem anterior
+function previousImage() {
+  if (imagesInFolder.length === 0) return;
+  
+  currentImageIndex = (currentImageIndex - 1 + imagesInFolder.length) % imagesInFolder.length;
+  const prevImagePath = imagesInFolder[currentImageIndex];
+  loadImageByPath(prevImagePath);
+}
+
 // Handler IPC para abrir imagem
 ipcMain.handle('open-image-dialog', openImageDialog);
+
+// Handlers IPC para navegação
+ipcMain.on('next-image', nextImage);
+ipcMain.on('previous-image', previousImage);
 
 // IPC para abrir janela de gerenciamento de energia
 ipcMain.on('open-power-management', () => {

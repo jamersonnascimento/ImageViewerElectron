@@ -9,6 +9,10 @@ contextBridge.exposeInMainWorld('electronAPI', { //Expor API do Electron para a 
 
   openPreview: () => ipcRenderer.send('open-preview'),
 
+  // Navegação entre imagens
+  nextImage: () => ipcRenderer.send('next-image'),
+  previousImage: () => ipcRenderer.send('previous-image'),
+
   onImageData: (cb) => ipcRenderer.on('image-data', (_e, data) => cb(data)),
 
   onPreviewImage: (cb) => ipcRenderer.on('preview-image', (_e, dataUrl) => cb(dataUrl)),

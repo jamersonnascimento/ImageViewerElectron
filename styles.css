@@ -195,6 +195,7 @@ body {
   width: 100%;
   max-height: 70vh;
   margin-bottom: 20px;
+  position: relative;
 }
 
 /* Imagem */
@@ -258,4 +259,81 @@ body {
 
 .scroll-container::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+/* Botões de navegação */
+.nav-button {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  display: none; /* Escondido por padrão */
+  z-index: 1000;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(15px);
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+.nav-button:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  transform: translateY(-50%) scale(1.15);
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+}
+
+.nav-button:active {
+  transform: translateY(-50%) scale(1.05);
+}
+
+.nav-left {
+  left: 30px;
+}
+
+.nav-right {
+  right: 30px;
+}
+
+/* Sempre mostrar se há uma imagem carregada */
+.image-container.has-image .nav-button {
+  display: block;
+  opacity: 0.8;
+}
+
+.image-container.has-image .nav-button:hover {
+  opacity: 1;
+}
+
+/* Container para mensagem de navegação */
+.nav-message {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: #dfe8f8;
+  padding: 12px 20px;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  display: none;
+  z-index: 1000;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Mostrar mensagem quando há imagem */
+.image-container.has-image .nav-message {
+  display: block;
 }
