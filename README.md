@@ -1,4 +1,4 @@
-# 📷 PhotoViewer Lite
+# 📷 PhotoViewer Lite v1.0.0
 
 Aplicativo avançado desenvolvido em **Electron** como desafio prático proposto pelo professor Alexandre Ferreira. O **PhotoViewer Lite** é um visualizador de imagens moderno com sistema integrado de **gerenciamento de energia**, oferecendo controle total sobre o consumo energético do sistema.
 
@@ -6,15 +6,41 @@ Aplicativo avançado desenvolvido em **Electron** como desafio prático proposto
 
 ## 🚀 Visão Geral
 
-O PhotoViewer Lite combina visualização de imagens com monitoramento e controle de energia em tempo real, utilizando recursos avançados do Electron para criar uma experiência completa e profissional.
+O PhotoViewer Lite combina visualização de imagens com monitoramento e controle de energia em tempo real, utilizando recursos avançados do Electron para criar uma experiência completa e profissional. **Versão 1.0** com identidade visual moderna e ícones personalizados.
 
 ### ✨ Principais Características
 
 - 🖼️ **Visualizador de Imagens**: Interface moderna para visualização de imagens
 - ⚡ **Gerenciamento de Energia**: Sistema completo de monitoramento e controle energético
 - 🎨 **Interface Customizada**: Janela sem moldura com design profissional
+- 🎯 **Identidade Visual Moderna**: Ícones personalizados com design glassmorphism
 - 📊 **Monitoramento em Tempo Real**: CPU, memória, temperatura e consumo energético
 - 🔧 **Controles Avançados**: PowerSaveBlocker, modo economia e otimização de sistema
+- 🏷️ **Sistema de Bandeja**: Integração completa com área de notificação do sistema
+
+---
+
+## 🎨 Identidade Visual e Ícones Personalizados
+
+### 🎯 **Design Moderno v1.0**
+
+✅ **Ícones Personalizados**
+- Design exclusivo com estilo glassmorphism
+- Gradientes modernos e bordas arredondadas
+- Múltiplos tamanhos: 16x16, 32x32, 64x64 pixels
+- Formato SVG vetorial para máxima qualidade
+
+✅ **Integração Completa**
+- Ícone principal da aplicação na barra de tarefas
+- Ícones específicos para bandeja do sistema (tray)
+- Consistência visual em todas as janelas
+- Substituição completa dos ícones padrão do Electron
+
+✅ **Características Técnicas**
+- Paleta de cores harmoniosa (azul, roxo, dourado)
+- Elementos representativos de visualização de imagens
+- Otimização para diferentes contextos de uso
+- Identidade visual única e profissional
 
 ---
 
@@ -103,7 +129,13 @@ O sistema fornece dicas práticas:
 ```
 ImageViewerElectron/
 ├── 📁 assets/
-│   └── 📁 icons/          # Ícones da aplicação
+│   └── 📁 icons/          # Ícones personalizados da aplicação
+│       ├── 📄 icon-16.svg     # Ícone 16x16 (barra de tarefas)
+│       ├── 📄 icon-32.svg     # Ícone 32x32 (janela principal)
+│       ├── 📄 icon-64.svg     # Ícone 64x64 (alta resolução)
+│       ├── 📄 tray-16.svg     # Ícone bandeja 16x16
+│       ├── 📄 tray-32.svg     # Ícone bandeja 32x32
+│       └── 📄 tray-64.svg     # Ícone bandeja 64x64
 ├── 📄 main.js             # Processo principal do Electron
 ├── 📄 preload.js          # Script de pré-carregamento
 ├── 📄 index.html          # Interface principal
@@ -111,8 +143,8 @@ ImageViewerElectron/
 ├── 📄 power-management.html # Interface de gerenciamento de energia
 ├── 📄 preview.html        # Interface da janela de pré-visualização
 ├── 📄 styles.css          # Estilos da aplicação
-├── 📄 package.json        # Configurações e dependências
-└── 📄 README.md           # Documentação
+├── 📄 package.json        # Configurações e dependências (v1.0.0)
+└── 📄 README.md           # Documentação atualizada
 ```
 
 ---
@@ -176,6 +208,8 @@ ImageViewerElectron/
 ✅ Botões de controle da janela funcionando via IPC  
 ✅ Botão para abrir imagens com exibição de informações completas  
 ✅ Design responsivo e moderno  
+✅ Ícones personalizados com identidade visual única  
+✅ Sistema de bandeja (tray) com ícones específicos  
 
 ### **Sistema de Energia**
 ✅ Monitoramento em tempo real de CPU, memória e energia  
@@ -209,6 +243,9 @@ Este projeto demonstra o domínio de conceitos avançados do Electron:
 - **Gerenciamento de Estado**: Persistência e sincronização de dados
 - **Interface Moderna**: Design profissional com animações
 - **Otimização de Performance**: Controle de recursos e memória
+- **Identidade Visual**: Ícones personalizados e design glassmorphism
+- **Sistema de Bandeja**: Integração completa com área de notificação
+- **Versionamento**: Aplicação pronta para produção (v1.0.0)
 
 ---
 
