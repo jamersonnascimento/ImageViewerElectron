@@ -297,4 +297,43 @@ window.addEventListener('resize', adjustLayout);
 // Ajustar layout inicial
 adjustLayout();
 
+// ========================================
+// MODAL DE AJUDA
+// ========================================
+
+/**
+ * Funcionalidade do modal de ajuda com atalhos de teclado
+ * Similar ao implementado na janela de preview
+ */
+
+// Botão de ajuda - abre o modal com atalhos
+document.getElementById('helpButton').addEventListener('click', () => {
+  const helpModal = document.getElementById('helpModal');
+  helpModal.classList.add('show');
+});
+
+// Botão fechar modal - fecha o modal de ajuda
+document.getElementById('helpClose').addEventListener('click', () => {
+  const helpModal = document.getElementById('helpModal');
+  helpModal.classList.remove('show');
+});
+
+// Fechar modal clicando fora do conteúdo
+document.getElementById('helpModal').addEventListener('click', (event) => {
+  if (event.target === event.currentTarget) {
+    const helpModal = document.getElementById('helpModal');
+    helpModal.classList.remove('show');
+  }
+});
+
+// Fechar modal com tecla ESC
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') {
+    const helpModal = document.getElementById('helpModal');
+    if (helpModal.classList.contains('show')) {
+      helpModal.classList.remove('show');
+    }
+  }
+});
+
 // Sistema de notificações carregado automaticamente

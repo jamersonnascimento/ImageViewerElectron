@@ -13,6 +13,7 @@
   <div class="titlebar">
     <div class="title">PhotoViewer Lite</div> <!-- Nome do app exibido na barra -->
     <div class="titlebar-controls">
+      <button id="helpButton" class="help-button" title="Atalhos e Ajuda">?</button> <!-- Botão de ajuda -->
       <button id="powerManagement" class="power-button" title="Gerenciamento de Energia">⚡</button> <!-- Botão de energia -->
       <div class="window-buttons"> <!-- Botões de controle da janela -->
         <button id="minimize">—</button> <!-- Minimiza a janela -->
@@ -50,6 +51,143 @@
 
   <!-- Barra de status para mensagens do app -->
   <div id="statusBar"></div> <!-- Pode mostrar mensagens como "Imagem carregada com sucesso" -->
+
+  <!-- Modal de Ajuda -->
+  <div class="help-modal" id="helpModal">
+    <div class="help-content">
+      <div class="help-header">
+        <h3>💡 Guia de Uso - PhotoViewer Lite</h3>
+        <button class="help-close" id="helpClose">✕</button>
+      </div>
+      <div class="help-body">
+        <div class="help-section">
+          <h4>🎯 Atalhos Globais</h4>
+          <div class="shortcut-list">
+            <div class="shortcut-item">
+              <span class="key">Ctrl+Shift+P</span>
+              <span class="description">Abrir janela de pré-visualização</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key">Ctrl+Alt+←</span>
+              <span class="description">Janela na metade esquerda</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key">Ctrl+Alt+→</span>
+              <span class="description">Janela na metade direita</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key">Ctrl+Alt+↑</span>
+              <span class="description">Maximizar janela</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key">Ctrl+Alt+↓</span>
+              <span class="description">Centralizar janela (800x600)</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="help-section">
+          <h4>⌨️ Atalhos da Janela Principal</h4>
+          <div class="shortcut-list">
+            <div class="shortcut-item">
+              <span class="key">←</span>
+              <span class="description">Imagem anterior</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key">→</span>
+              <span class="description">Próxima imagem</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key">Esc</span>
+              <span class="description">Fechar modal de ajuda</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <h4>🔍 Atalhos da Janela Preview</h4>
+          <div class="shortcut-list">
+            <div class="shortcut-item">
+              <span class="key">Esc</span>
+              <span class="description">Fechar janela</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key">F11</span>
+              <span class="description">Maximizar/Restaurar</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key">+ ou =</span>
+              <span class="description">Zoom In</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key">- ou _</span>
+              <span class="description">Zoom Out</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key">0</span>
+              <span class="description">Reset Zoom</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="help-section">
+          <h4>🖱️ Controles do Mouse</h4>
+          <div class="shortcut-list">
+            <div class="shortcut-item">
+              <span class="key">Clique</span>
+              <span class="description">Selecionar imagem</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key">Duplo clique</span>
+              <span class="description">Abrir pré-visualização</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key">Scroll</span>
+              <span class="description">Zoom na pré-visualização</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key">Arrastar</span>
+              <span class="description">Pan na pré-visualização</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <h4>🔧 Funcionalidades Principais</h4>
+          <div class="shortcut-list">
+            <div class="shortcut-item">
+              <span class="key">📁</span>
+              <span class="description">Navegação automática por pastas</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key">🖼️</span>
+              <span class="description">Suporte: JPG, PNG, GIF, BMP, WEBP</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key">💾</span>
+              <span class="description">Estado da janela salvo automaticamente</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key">🎨</span>
+              <span class="description">Interface moderna e responsiva</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <h4>💡 Dicas de Uso</h4>
+          <ul class="tips-list">
+            <li>Use as setas do teclado (← →) para navegar rapidamente entre imagens</li>
+            <li>O botão Preview abre uma janela com controles avançados de zoom</li>
+            <li>Formatos suportados: JPG, PNG, GIF, BMP, WEBP, SVG</li>
+            <li>O botão de energia oferece opções de hibernação e suspensão</li>
+            <li>A janela pode ser minimizada para a bandeja do sistema</li>
+            <li>Use o botão ? para acessar esta ajuda a qualquer momento</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Sistema de notificações elegante -->
   <script src="notifications.js"></script> <!-- Sistema de notificações moderno -->

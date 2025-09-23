@@ -153,7 +153,7 @@ npm start
 
 ```bash
 # Método 1: Script automatizado
-.\build.bat
+.\build-windows.bat
 
 # Método 2: Comando direto
 npm run package
