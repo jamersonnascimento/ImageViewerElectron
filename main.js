@@ -572,12 +572,9 @@ ipcMain.handle('optimize-resources', () => {
       global.gc();
     }
     
-    // Minimizar todas as janelas para liberar recursos visuais
+    // Limpar cache de imagens não utilizadas
     if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.minimize();
-    }
-    if (previewWindow && !previewWindow.isDestroyed()) {
-      previewWindow.minimize();
+      mainWindow.webContents.session.clearCache();
     }
     
     return { success: true, message: 'Recursos otimizados com sucesso!' };

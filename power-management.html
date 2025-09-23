@@ -267,6 +267,14 @@
           <div class="resource-fill" id="powerBar" style="width: 0%"></div>
         </div>
       </div>
+      
+      <div class="resource-card">
+        <div class="resource-label">Bateria</div>
+        <div class="resource-value" id="batteryValue">--% 🔌</div>
+        <div class="resource-bar">
+          <div class="resource-fill" id="batteryBar" style="width: 0%"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -347,6 +355,8 @@
     const tempBar = document.getElementById('tempBar');
     const powerValue = document.getElementById('powerValue');
     const powerBar = document.getElementById('powerBar');
+    const batteryValue = document.getElementById('batteryValue');
+    const batteryBar = document.getElementById('batteryBar');
 
     // INICIALIZAÇÃO
     document.addEventListener('DOMContentLoaded', () => {
@@ -499,6 +509,55 @@
       const power = 30 + (data.memory.percentage * 1.5);
       powerValue.textContent = `${Math.round(power)}W`;
       powerBar.style.width = `${Math.min(power / 200 * 100, 100)}%`;
+      
+      // Bateria
+      updateBatteryDisplay();
+    }
+
+    // ATUALIZAR DISPLAY DA BATERIA
+    async function updateBatteryDisplay() {
+      try {
+        if ('getBattery' in navigator) {
+          const battery = await navigator.getBattery();
+          const batteryLevel = Math.round(battery.level * 100);
+          const isCharging = battery.charging;
+          
+          // Determinar ícone baseado no status
+          let icon = '🔋'; // Bateria padrão
+          if (isCharging) {
+            icon = '🔌'; // Carregando
+          } else if (batteryLevel <= 20) {
+            icon = '🪫'; // Bateria baixa
+          } else if (batteryLevel >= 80) {
+            icon = '🔋'; // Bateria cheia
+          }
+          
+          // Atualizar texto
+          const status = isCharging ? 'Carregando' : 'Na bateria';
+          batteryValue.textContent = `${batteryLevel}% ${icon}`;
+          
+          // Atualizar barra de progresso
+          batteryBar.style.width = `${batteryLevel}%`;
+          
+          // Mudar cor da barra baseado no nível
+          if (batteryLevel <= 20) {
+            batteryBar.style.background = 'linear-gradient(45deg, #FF6B6B, #FF8E53)'; // Vermelho
+          } else if (batteryLevel <= 50) {
+            batteryBar.style.background = 'linear-gradient(45deg, #FFD93D, #FF8E53)'; // Amarelo
+          } else {
+            batteryBar.style.background = 'linear-gradient(45deg, #6BCF7F, #4ECDC4)'; // Verde
+          }
+          
+        } else {
+          // Fallback para quando a API de bateria não está disponível
+          batteryValue.textContent = 'N/A 🖥️';
+          batteryBar.style.width = '0%';
+        }
+      } catch (error) {
+        console.log('API de bateria não disponível:', error);
+        batteryValue.textContent = 'N/A 🖥️';
+        batteryBar.style.width = '0%';
+      }
     }
 
     // OTIMIZAR SISTEMA
