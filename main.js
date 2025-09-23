@@ -60,7 +60,8 @@ function createMainWindow() { // Criar janela principal
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
     },
-    frame: false
+    frame: false,
+    icon: path.join(__dirname, 'assets/icons/icon_64x64.png')
   });
 
   mainWindow.loadFile('index.html'); // Carregar arquivo HTML
@@ -155,10 +156,12 @@ function togglePreviewWindow() {
       previewWindow = null;
     } else {
       previewWindow = new BrowserWindow({
-        width: 300,
-        height: 200,
+        width: 800,
+        height: 600,
         alwaysOnTop: true,
         frame: false,
+        resizable: true,
+        icon: path.join(__dirname, 'assets/icons/icon_64x64.png'),
         webPreferences: {
           preload: path.join(__dirname, 'preload.js')
         }
@@ -325,6 +328,17 @@ function getImagesInFolder(imagePath) {
 // IPC abrir preview
 ipcMain.on('open-preview', () => {
   togglePreviewWindow();
+});
+
+// Handler para maximizar janela de preview
+ipcMain.on('maximize-preview-window', () => {
+  if (previewWindow) {
+    if (previewWindow.isMaximized()) {
+      previewWindow.unmaximize();
+    } else {
+      previewWindow.maximize();
+    }
+  }
 });
 
 // IPC abrir imagem

@@ -15,6 +15,35 @@
       flex-direction:column;
       align-items:stretch;
       gap:8px;
+      animation: windowFadeIn 0.3s ease-out;
+    }
+
+    /* Animação de entrada da janela */
+    @keyframes windowFadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    /* Classe para animação de saída */
+    body.closing {
+      animation: windowFadeOut 0.2s ease-in forwards;
+    }
+
+    @keyframes windowFadeOut {
+      from {
+        opacity: 1;
+        transform: scale(1);
+      }
+      to {
+        opacity: 0;
+        transform: scale(0.95);
+      }
     }
 
     /* Titlebar personalizado */
@@ -46,8 +75,29 @@
       width:30px;height:24px;
       border-radius:6px;
       cursor:pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
     }
-    .preview-titlebar button:hover{ background: rgba(255,255,255,0.04); }
+    .preview-titlebar button:hover{ 
+      background: rgba(255,255,255,0.08);
+      transform: scale(1.05);
+      color: #ffffff;
+    }
+    .preview-titlebar button:active{
+      transform: scale(0.95);
+      background: rgba(255,255,255,0.12);
+    }
+    .preview-titlebar button#closePreview:hover{
+      background: rgba(255, 59, 48, 0.8);
+      color: white;
+    }
+    .preview-titlebar button#maximizePreview:hover{
+      background: rgba(52, 199, 89, 0.8);
+      color: white;
+    }
 
     /* Conteúdo da janela */
     .preview-body{
@@ -56,20 +106,398 @@
       justify-content:center;
       padding:10px;
       height: calc(100% - 30px);
+      overflow: hidden;
+      position: relative;
+      cursor: grab;
+    }
+    .preview-body.dragging {
+      cursor: grabbing;
     }
     #previewImage{
-      max-width:100%;
-      max-height:100%;
       border-radius:8px;
       box-shadow: 0 8px 26px rgba(0,0,0,0.6);
       display:none;
-      object-fit:contain;
       background:#0b0c0d;
+      transition: transform 0.1s ease;
+      user-select: none;
+      -webkit-user-drag: none;
+      position: absolute;
+      transform-origin: center center;
     }
     #placeholder{
       color: rgba(255,255,255,0.18);
       font-size:13px;
       text-align:center;
+    }
+    
+    /* Indicador de zoom */
+    .zoom-indicator {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-family: monospace;
+      font-weight: bold;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      z-index: 100;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(4px);
+    }
+    
+    .zoom-indicator.visible {
+      opacity: 1;
+    }
+    
+    /* Instruções */
+    .instructions {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .instructions.show {
+      opacity: 1;
+    }
+
+    /* Loading indicator */
+    .loading-indicator {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      color: var(--text);
+    }
+
+    .loading-indicator.show {
+      display: flex;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top: 3px solid #007AFF;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loading-text {
+      font-size: 14px;
+      color: var(--text);
+      opacity: 0.8;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Help Modal */
+    .help-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      backdrop-filter: blur(5px);
+    }
+
+    .help-modal.show {
+      display: flex;
+    }
+
+    .help-content {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      animation: modalSlideIn 0.3s ease-out;
+    }
+
+    .help-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .help-header h3 {
+      margin: 0;
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .help-close {
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+
+    .help-close:hover {
+      background: var(--hover);
+    }
+
+    .help-body {
+      padding: 20px 24px;
+    }
+
+    .help-section {
+      margin-bottom: 24px;
+    }
+
+    .help-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .help-section h4 {
+      margin: 0 0 12px 0;
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .shortcut-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .shortcut-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 8px 12px;
+      background: var(--hover);
+      border-radius: 6px;
+    }
+
+    .shortcut-item .key {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      font-weight: bold;
+      color: #007AFF;
+      min-width: 60px;
+      text-align: center;
+    }
+
+    .shortcut-item .description {
+      color: var(--text);
+      font-size: 14px;
+      flex: 1;
+    }
+
+    .tips-list {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--text);
+    }
+
+    .tips-list li {
+      margin-bottom: 8px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .tips-list li:last-child {
+      margin-bottom: 0;
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    /* Toolbar Bottom */
+    .toolbar-bottom {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 25px;
+      padding: 8px 16px;
+      display: none;
+      z-index: 100;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .toolbar-bottom.show {
+      display: block;
+      animation: toolbarSlideUp 0.3s ease-out;
+    }
+
+    .toolbar-content {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toolbar-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 20px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: white;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .toolbar-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.05);
+    }
+
+    .toolbar-btn:active {
+      transform: scale(0.95);
+    }
+
+    .toolbar-btn svg {
+      transition: transform 0.2s ease;
+    }
+
+    .toolbar-btn:hover svg {
+      transform: scale(1.1);
+    }
+
+    /* Efeito ripple nos botões */
+    .toolbar-btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.3s, height 0.3s;
+    }
+
+    .toolbar-btn:active::before {
+      width: 40px;
+      height: 40px;
+    }
+
+    @keyframes toolbarSlideUp {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    /* Botões de Navegação Lateral */
+    .nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 50px;
+      height: 80px;
+      background: rgba(0, 0, 0, 0.7);
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      border-radius: 8px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    .nav-btn.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .nav-btn:hover {
+      background: rgba(0, 0, 0, 0.9);
+      transform: translateY(-50%) scale(1.05);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .nav-btn:active {
+      transform: translateY(-50%) scale(0.95);
+    }
+
+    .nav-btn-prev {
+      left: 20px;
+    }
+
+    .nav-btn-next {
+      right: 20px;
+    }
+
+    .nav-btn svg {
+      width: 20px;
+      height: 20px;
+      transition: transform 0.2s ease;
+    }
+
+    .nav-btn:hover svg {
+      transform: scale(1.1);
     }
   </style>
 </head>
@@ -77,6 +505,8 @@
   <div class="preview-titlebar">
     <div class="title">Pré Visualização</div>
     <div class="controls">
+      <button id="helpPreview" title="Ajuda">?</button>
+      <button id="maximizePreview" title="Maximizar">⬜</button>
       <button id="closePreview" title="Fechar">✕</button>
     </div>
   </div>
@@ -84,12 +514,301 @@
   <div class="preview-body">
     <img id="previewImage" alt="preview" />
     <div id="placeholder">Nenhuma imagem carregada</div>
+    <div class="loading-indicator" id="loadingIndicator">
+      <div class="spinner"></div>
+      <div class="loading-text">Carregando imagem...</div>
+    </div>
+    <div class="zoom-indicator" id="zoomIndicator">100%</div>
+    <div class="instructions" id="instructions">
+      🖱️ Arraste para mover • 🔍 Scroll para zoom • 🖱️ Duplo clique para resetar
+    </div>
+
+    <!-- Botões de Navegação Lateral -->
+    <button class="nav-btn nav-btn-prev" id="prevImage" title="Imagem Anterior">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+      </svg>
+    </button>
+    
+    <button class="nav-btn nav-btn-next" id="nextImage" title="Próxima Imagem">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Barra de Ferramentas Inferior -->
+  <div class="toolbar-bottom" id="toolbarBottom">
+    <div class="toolbar-content">
+      <button class="toolbar-btn" id="zoomOut" title="Diminuir Zoom">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+          <path d="M7 9h5v1H7z"/>
+        </svg>
+      </button>
+      
+      <button class="toolbar-btn" id="zoomIn" title="Aumentar Zoom">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+          <path d="M10 7H9v2H7v1h2v2h1v-2h2V9h-2V7z"/>
+        </svg>
+      </button>
+      
+      <button class="toolbar-btn" id="rotateLeft" title="Rotacionar 90° Anti-horário">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M7.11 8.53L5.7 7.11C4.8 8.27 4.24 9.61 4.07 11h2.02c.14-.87.49-1.72 1.02-2.47zM6.09 13H4.07c.17 1.39.72 2.73 1.62 3.89l1.41-1.42c-.52-.75-.87-1.59-1.01-2.47zm1.01 5.32c1.16.9 2.51 1.44 3.9 1.61V17.91c-.87-.15-1.71-.49-2.46-1.03L7.1 18.32zM13 4.07V1L8.45 5.55 13 10V6.09c2.84.48 5 2.94 5 5.91s-2.16 5.43-5 5.91v2.02c3.95-.49 7-3.85 7-7.93s-3.05-7.44-7-7.93z"/>
+        </svg>
+      </button>
+      
+      <button class="toolbar-btn" id="rotateRight" title="Rotacionar 90° Horário">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M15.55 5.55L11 1v3.07C7.06 4.56 4 7.92 4 12s3.05 7.44 7 7.93v-2.02c-2.84-.48-5-2.94-5-5.91s2.16-5.43 5-5.91V10l4.55-4.45zM19.93 11c-.17-1.39-.72-2.73-1.62-3.89l-1.42 1.42c.54.75.88 1.6 1.02 2.47h2.02zM13 17.9v2.02c1.39-.17 2.74-.71 3.9-1.61l-1.44-1.44c-.75.54-1.59.89-2.46 1.03zm3.89-2.42l1.42 1.41c.9-1.16 1.45-2.5 1.62-3.89h-2.02c-.14.87-.48 1.72-1.02 2.48z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal de Ajuda -->
+  <div class="help-modal" id="helpModal">
+    <div class="help-content">
+      <div class="help-header">
+        <h3>💡 Guia de Uso - Visualizador de Imagens</h3>
+        <button class="help-close" id="helpClose">✕</button>
+      </div>
+      <div class="help-body">
+        <div class="help-section">
+          <h4>⌨️ Atalhos de Teclado</h4>
+          <div class="shortcut-list">
+            <div class="shortcut-item">
+              <span class="key">ESC</span>
+              <span class="description">Fechar janela</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key">F11</span>
+              <span class="description">Maximizar/Restaurar</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key">+ ou =</span>
+              <span class="description">Zoom In</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key">- ou _</span>
+              <span class="description">Zoom Out</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key">0</span>
+              <span class="description">Reset Zoom (100%)</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="help-section">
+          <h4>🖱️ Controles do Mouse</h4>
+          <div class="shortcut-list">
+            <div class="shortcut-item">
+              <span class="key">Arrastar</span>
+              <span class="description">Mover imagem</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key">Scroll</span>
+              <span class="description">Zoom In/Out</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key">Duplo Clique</span>
+              <span class="description">Reset Zoom</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <h4>🔍 Controles de Zoom</h4>
+          <div class="shortcut-list">
+            <div class="shortcut-item">
+              <span class="key">Botão +</span>
+              <span class="description">Aumentar Zoom</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key">Botão -</span>
+              <span class="description">Diminuir Zoom</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <h4>🔄 Controles de Rotação</h4>
+          <div class="shortcut-list">
+            <div class="shortcut-item">
+              <span class="key">Botão ↺</span>
+              <span class="description">Rotacionar 90° Anti-horário</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key">Botão ↻</span>
+              <span class="description">Rotacionar 90° Horário</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <h4>⬅️➡️ Navegação</h4>
+          <div class="shortcut-list">
+            <div class="shortcut-item">
+              <span class="key">Botão ◀</span>
+              <span class="description">Imagem Anterior</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="key">Botão ▶</span>
+              <span class="description">Próxima Imagem</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <h4>💡 Dicas</h4>
+          <ul class="tips-list">
+            <li>O zoom é sempre centralizado no ponto do mouse</li>
+            <li>Use o scroll para zoom preciso na área desejada</li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
     const img = document.getElementById('previewImage');
     const placeholder = document.getElementById('placeholder');
+    const helpModal = document.getElementById('helpModal');
+    const helpButton = document.getElementById('helpPreview');
+    const helpClose = document.getElementById('helpClose');
     const closeBtn = document.getElementById('closePreview');
+    const maximizeBtn = document.getElementById('maximizePreview');
+    const previewBody = document.querySelector('.preview-body');
+    const zoomIndicator = document.getElementById('zoomIndicator');
+    const instructions = document.getElementById('instructions');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const toolbarBottom = document.getElementById('toolbarBottom');
+    const rotateLeftBtn = document.getElementById('rotateLeft');
+    const rotateRightBtn = document.getElementById('rotateRight');
+    const zoomInBtn = document.getElementById('zoomIn');
+    const zoomOutBtn = document.getElementById('zoomOut');
+    const prevImageBtn = document.getElementById('prevImage');
+    const nextImageBtn = document.getElementById('nextImage');
+
+    // Variáveis para arrastar e zoom
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let currentX = 0;
+    let currentY = 0;
+    let scale = 1;
+    let rotation = 0; // Nova variável para rotação
+    let imageLoaded = false;
+
+    // Função para centralizar a imagem
+    function centerImage() {
+      if (!imageLoaded) return;
+      
+      // Reset para posição central (0,0 é o centro devido ao CSS)
+      currentX = 0;
+      currentY = 0;
+      
+      updateImageTransform();
+    }
+
+    // Função para atualizar a transformação da imagem
+    function updateImageTransform() {
+      img.style.transform = `translate(${currentX}px, ${currentY}px) scale(${scale}) rotate(${rotation}deg)`;
+    }
+
+    // Função para atualizar o indicador de zoom
+    function showZoomIndicator() {
+      zoomIndicator.textContent = `${Math.round(scale * 100)}%`;
+      zoomIndicator.classList.add('visible');
+      
+      // Esconder após 2 segundos
+      clearTimeout(window.zoomTimeout);
+      window.zoomTimeout = setTimeout(() => {
+        zoomIndicator.classList.remove('visible');
+      }, 2000);
+    }
+
+    // Função para mostrar instruções
+    function showInstructions() {
+      instructions.classList.add('visible');
+      // Instruções agora permanecem visíveis permanentemente
+    }
+
+    // Função para mostrar/esconder toolbar
+    function showToolbar() {
+      if (imageLoaded) {
+        toolbarBottom.classList.add('show');
+      }
+    }
+
+    function hideToolbar() {
+      toolbarBottom.classList.remove('show');
+    }
+
+    // Função para mostrar/esconder botões de navegação
+    function showNavButtons() {
+      if (imageLoaded) {
+        prevImageBtn.classList.add('show');
+        nextImageBtn.classList.add('show');
+      }
+    }
+
+    function hideNavButtons() {
+      prevImageBtn.classList.remove('show');
+      nextImageBtn.classList.remove('show');
+    }
+
+    // Funções de rotação
+    function rotateLeft() {
+      if (!imageLoaded) return;
+      rotation -= 90;
+      if (rotation < 0) rotation = 270;
+      updateImageTransform();
+    }
+
+    function rotateRight() {
+      if (!imageLoaded) return;
+      rotation += 90;
+      if (rotation >= 360) rotation = 0;
+      updateImageTransform();
+    }
+
+    // Funções de zoom
+    function zoomIn() {
+      if (!imageLoaded) return;
+      const newScale = Math.min(scale * 1.2, 5); // Máximo 5x
+      if (newScale !== scale) {
+        scale = newScale;
+        updateImageTransform();
+        showZoomIndicator();
+      }
+    }
+
+    function zoomOut() {
+      if (!imageLoaded) return;
+      const newScale = Math.max(scale / 1.2, 0.1); // Mínimo 0.1x
+      if (newScale !== scale) {
+        scale = newScale;
+        updateImageTransform();
+        showZoomIndicator();
+      }
+    }
+
+    // Funções de navegação
+    function navigateToNext() {
+      if (window.electronAPI && window.electronAPI.nextImage) {
+        window.electronAPI.nextImage();
+      }
+    }
+
+    function navigateToPrevious() {
+      if (window.electronAPI && window.electronAPI.previousImage) {
+        window.electronAPI.previousImage();
+      }
+    }
 
     // Evento vindo do main (preload expõe onPreviewImage)
     if (window.electronAPI && window.electronAPI.onPreviewImage) {
@@ -97,18 +816,237 @@
         if (!dataUrl) {
           img.style.display = 'none';
           placeholder.style.display = 'block';
+          loadingIndicator.classList.remove('show');
+          imageLoaded = false;
           return;
         }
+        
+        // Mostrar loading
         placeholder.style.display = 'none';
-        img.style.display = 'block';
+        loadingIndicator.classList.add('show');
+        img.style.display = 'none';
+        
+        // Reset zoom, posição e rotação antes de carregar
+        scale = 1;
+        currentX = 0;
+        currentY = 0;
+        rotation = 0;
+        
+        // Carregar imagem
+        img.onload = () => {
+          loadingIndicator.classList.remove('show');
+          img.style.display = 'block';
+          imageLoaded = true;
+          
+          // Garantir centralização após carregamento
+          currentX = 0;
+          currentY = 0;
+          centerImage();
+          
+          showInstructions();
+          showToolbar();
+          showNavButtons();
+        };
+        
+        img.onerror = () => {
+          loadingIndicator.classList.remove('show');
+          placeholder.style.display = 'block';
+          imageLoaded = false;
+          hideToolbar();
+          hideNavButtons();
+        };
+        
         img.src = dataUrl;
       });
     } else {
       console.warn('electronAPI.onPreviewImage não encontrado no preload.');
     }
 
+    // Eventos de arrastar
+    img.addEventListener('mousedown', (e) => {
+      if (!imageLoaded) return;
+      
+      isDragging = true;
+      previewBody.classList.add('dragging');
+      
+      startX = e.clientX - currentX;
+      startY = e.clientY - currentY;
+      
+      e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging || !imageLoaded) return;
+      
+      currentX = e.clientX - startX;
+      currentY = e.clientY - startY;
+      
+      updateImageTransform();
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (isDragging) {
+        isDragging = false;
+        previewBody.classList.remove('dragging');
+      }
+    });
+
+    // Zoom com scroll do mouse
+    previewBody.addEventListener('wheel', (e) => {
+      if (!imageLoaded) return;
+      
+      e.preventDefault();
+      
+      // Usar o mesmo comportamento dos botões de zoom (centralizado)
+      if (e.deltaY < 0) {
+        // Zoom in
+        const newScale = Math.min(scale * 1.2, 5); // Máximo 5x
+        if (newScale !== scale) {
+          scale = newScale;
+          updateImageTransform();
+          showZoomIndicator();
+        }
+      } else {
+        // Zoom out
+        const newScale = Math.max(scale / 1.2, 0.1); // Mínimo 0.1x
+        if (newScale !== scale) {
+          scale = newScale;
+          updateImageTransform();
+          showZoomIndicator();
+        }
+      }
+    });
+
+    // Reset zoom com duplo clique
+    img.addEventListener('dblclick', () => {
+      if (!imageLoaded) return;
+      
+      scale = 1;
+      centerImage();
+      showZoomIndicator();
+    });
+
+    // Redimensionamento da janela
+    window.addEventListener('resize', () => {
+      if (imageLoaded && scale === 1) {
+        centerImage();
+      }
+    });
+
     closeBtn.addEventListener('click', () => {
-      window.close();
+      document.body.classList.add('closing');
+      setTimeout(() => {
+        window.close();
+      }, 200);
+    });
+
+    maximizeBtn.addEventListener('click', () => {
+      if (window.electronAPI && window.electronAPI.maximizeWindow) {
+        window.electronAPI.maximizeWindow();
+      }
+    });
+
+    // Event listeners para os botões de rotação
+    rotateLeftBtn.addEventListener('click', rotateLeft);
+    rotateRightBtn.addEventListener('click', rotateRight);
+
+    // Event listeners para os botões de zoom
+    zoomInBtn.addEventListener('click', zoomIn);
+    zoomOutBtn.addEventListener('click', zoomOut);
+
+    // Event listeners para os botões de navegação
+    nextImageBtn.addEventListener('click', navigateToNext);
+    prevImageBtn.addEventListener('click', navigateToPrevious);
+
+    // Event listeners para o modal de ajuda
+    helpButton.addEventListener('click', () => {
+      helpModal.classList.add('show');
+    });
+
+    helpClose.addEventListener('click', () => {
+      helpModal.classList.remove('show');
+    });
+
+    // Fechar modal clicando no fundo
+    helpModal.addEventListener('click', (e) => {
+      if (e.target === helpModal) {
+        helpModal.classList.remove('show');
+      }
+    });
+
+    // Fechar modal com ESC (apenas se não estiver com imagem carregada)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && helpModal.classList.contains('show')) {
+        helpModal.classList.remove('show');
+        e.stopPropagation();
+      }
+    });
+
+    // Atalhos de teclado
+    document.addEventListener('keydown', (e) => {
+      if (!imageLoaded && e.key !== 'Escape' && e.key !== 'F11') return;
+      
+      switch(e.key) {
+        case 'Escape':
+          document.body.classList.add('closing');
+          setTimeout(() => {
+            window.close();
+          }, 200);
+          break;
+        case 'F11':
+          if (window.electronAPI && window.electronAPI.maximizeWindow) {
+            window.electronAPI.maximizeWindow();
+          }
+          break;
+        case '+':
+        case '=':
+          // Zoom in
+          if (imageLoaded) {
+            const rect = previewBody.getBoundingClientRect();
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const oldScale = scale;
+            scale = Math.min(scale * 1.2, 5);
+            
+            if (scale !== oldScale) {
+              const scaleChange = scale / oldScale;
+              currentX = centerX - (centerX - currentX) * scaleChange;
+              currentY = centerY - (centerY - currentY) * scaleChange;
+              updateImageTransform();
+              showZoomIndicator();
+            }
+          }
+          break;
+        case '-':
+        case '_':
+          // Zoom out
+          if (imageLoaded) {
+            const rect = previewBody.getBoundingClientRect();
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const oldScale = scale;
+            scale = Math.max(scale / 1.2, 0.1);
+            
+            if (scale !== oldScale) {
+              const scaleChange = scale / oldScale;
+              currentX = centerX - (centerX - currentX) * scaleChange;
+              currentY = centerY - (centerY - currentY) * scaleChange;
+              updateImageTransform();
+              showZoomIndicator();
+            }
+          }
+          break;
+        case '0':
+          // Reset zoom
+          if (imageLoaded) {
+            scale = 1;
+            centerImage();
+            showZoomIndicator();
+          }
+          break;
+      }
     });
   </script>
 </body>

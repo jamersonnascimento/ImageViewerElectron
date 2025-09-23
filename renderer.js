@@ -43,7 +43,8 @@ document.getElementById('previewImage').addEventListener('click', () => {
 // Fechar imagem
 document.getElementById('closeImage').addEventListener('click', () => {
   imagePreviewElement.src = '';
-  imageInfoElement.style.display = 'none';
+  imagePreviewElement.style.display = 'none'; // Esconder elemento da imagem
+  imageInfoElement.innerHTML = ''; // Limpar conteúdo das informações (CSS automático vai esconder)
   adjustLayout(); // Ajustar layout após remover imagem
 })
 
@@ -73,6 +74,7 @@ document.addEventListener('keydown', (event) => {
 // Listeners de eventos do Electron
 window.electronAPI.onImageData((imageData) => {
   imagePreviewElement.src = imageData.dataUrl;
+  imagePreviewElement.style.display = 'block'; // Mostrar elemento da imagem
   
   // Atualizar informações da imagem
   imageInfoElement.innerHTML = `

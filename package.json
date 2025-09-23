@@ -1,6 +1,6 @@
 {
   "name": "imageviewerelectron",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Um pequeno projeto de um visualizador de imagem",
   "homepage": "https://github.com/jamersonnascimento/ImageViewerElectron#readme",
   "bugs": {
@@ -22,6 +22,7 @@
     "electron-reload": "^2.0.0-alpha.1"
   },
   "devDependencies": {
-    "electron": "^37.4.0"
+    "electron": "^37.4.0",
+    "sharp": "^0.34.4"
   }
 }

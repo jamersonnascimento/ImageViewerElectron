@@ -17,6 +17,9 @@ contextBridge.exposeInMainWorld('electronAPI', { //Expor API do Electron para a 
 
   onPreviewImage: (cb) => ipcRenderer.on('preview-image', (_e, dataUrl) => cb(dataUrl)),
 
+  // Controle da janela de preview
+  maximizeWindow: () => ipcRenderer.send('maximize-preview-window'),
+
   // 🔹 Novo → receber estado da janela
   onWindowState: (cb) => ipcRenderer.on('window-state-updated', (_e, bounds) => cb(bounds)),
 

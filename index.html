@@ -12,10 +12,13 @@
   <!-- Barra de título personalizada (imitando a barra nativa do sistema) -->
   <div class="titlebar">
     <div class="title">PhotoViewer Lite</div> <!-- Nome do app exibido na barra -->
-    <div class="window-buttons"> <!-- Botões de controle da janela -->
-      <button id="minimize">—</button> <!-- Minimiza a janela -->
-      <button id="maximize">⬜</button> <!-- Maximiza/restaura -->
-      <button id="close">✕</button> <!-- Fecha a janela -->
+    <div class="titlebar-controls">
+      <button id="powerManagement" class="power-button" title="Gerenciamento de Energia">⚡</button> <!-- Botão de energia -->
+      <div class="window-buttons"> <!-- Botões de controle da janela -->
+        <button id="minimize">—</button> <!-- Minimiza a janela -->
+        <button id="maximize">⬜</button> <!-- Maximiza/restaura -->
+        <button id="close">✕</button> <!-- Fecha a janela -->
+      </div>
     </div>
   </div>
   <!-- Esses botões serão conectados ao processo principal do Electron via IPC para controlar a janela. -->
@@ -25,7 +28,6 @@
     <button id="openImage">Abrir Imagem</button> <!-- Botão para abrir uma imagem -->
     <button id="previewImage">Pré-visualizar</button> <!-- Botão para mostrar preview -->
     <button id="closeImage">Fechar Imagem</button> <!-- Botão para remover imagem da tela -->
-    <button id="powerManagement">⚡ Energia</button> <!-- Botão para abrir gerenciamento de energia -->
   </div>
   <!-- Vai conectar eventos de clique com funções no renderer.js para manipular imagens. -->
 
