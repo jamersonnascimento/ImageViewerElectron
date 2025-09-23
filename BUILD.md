@@ -23,9 +23,9 @@
    npm install
    ```
 
-2. **Execute o script de build:**
+2. **Execute o script de build no powershell:**
    ```bash
-   .\build.bat
+   .\build-windows.bat 
    ```
 
 3. **Localização do executável:**
