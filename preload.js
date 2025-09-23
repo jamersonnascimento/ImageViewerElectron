@@ -22,6 +22,12 @@ contextBridge.exposeInMainWorld('electronAPI', { //Expor API do Electron para a 
 
   // 🔹 Novo → receber estado da janela
   onWindowState: (cb) => ipcRenderer.on('window-state-updated', (_e, bounds) => cb(bounds)),
+  
+  // 🔔 Eventos de sistema para notificações
+  onWindowMinimized: (cb) => ipcRenderer.on('window-minimized', () => cb()),
+  onWindowRestored: (cb) => ipcRenderer.on('window-restored', () => cb()),
+  onWindowShown: (cb) => ipcRenderer.on('window-shown', () => cb()),
+  onWindowHidden: (cb) => ipcRenderer.on('window-hidden', () => cb()),
 
   // APIs de gerenciamento de energia
   openPowerManagement: () => ipcRenderer.send('open-power-management'),

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, globalShortcut, screen, nativeImage, Tray, Menu, powerSaveBlocker } = require('electron'); // Importar módulos do Electron
+const { app, BrowserWindow, ipcMain, dialog, globalShortcut, screen, nativeImage, Tray, Menu, powerSaveBlocker, Notification } = require('electron'); // Importar módulos do Electron
 const path = require('path'); // Importar módulo de caminho
 const fs = require('fs') // Importar módulo de filesystem
 const os = require('os'); // Importar módulo do sistema operacional
@@ -15,6 +15,22 @@ let imagesInFolder = []; // lista de imagens na pasta atual
 // Variáveis de gerenciamento de energia
 let powerSaveBlockerId = null; // ID do bloqueador de economia de energia
 let lowPowerModeActive = false; // Estado do modo de baixo consumo
+
+// 🔔 Função para criar notificações do sistema operacional
+function showSystemNotification(title, body, options = {}) {
+  if (Notification.isSupported()) {
+    const notification = new Notification({
+      title: title,
+      body: body,
+      icon: path.join(__dirname, 'assets', 'icons', 'icon_64x64.png'),
+      silent: options.silent || false,
+      ...options
+    });
+    
+    notification.show();
+    return notification;
+  }
+}
 
 function restoreWindowState() { // Restaurar estado da janela
   try {
@@ -84,6 +100,13 @@ function createMainWindow() { // Criar janela principal
   if (!app.isQuitting) {
     event.preventDefault(); // impede fechar
     mainWindow.hide();      // apenas esconde
+    
+    // 🔔 Notificação do sistema quando minimizada para bandeja
+    showSystemNotification(
+      'PhotoViewer Lite',
+      'Aplicação minimizada para o ícone da bandeja do sistema.',
+      { silent: true }
+    );
   }
 })
 
@@ -100,6 +123,23 @@ function createMainWindow() { // Criar janela principal
   // Salvar estado quando maximizar ou restaurar
   mainWindow.on('maximize', saveWindowState);
   mainWindow.on('unmaximize', saveWindowState);
+  
+  // 🔔 Eventos para notificações de sistema
+  mainWindow.on('minimize', () => {
+    mainWindow.webContents.send('window-minimized');
+  });
+  
+  mainWindow.on('restore', () => {
+    mainWindow.webContents.send('window-restored');
+  });
+  
+  mainWindow.on('show', () => {
+    mainWindow.webContents.send('window-shown');
+  });
+  
+  mainWindow.on('hide', () => {
+    mainWindow.webContents.send('window-hidden');
+  });
 
   // Atalhos Extras
 
@@ -356,40 +396,57 @@ async function openImageDialog() {
 
   if (canceled || filePaths.length === 0) return null; // Se cancelado ou nenhum arquivo selecionado, retornar null
 
-  const fsExtra = require('fs');
-  const filePath = filePaths[0];
-  const stats = fsExtra.statSync(filePath);
-  const ext = path.extname(filePath).toLowerCase().replace('.', '') || 'png';
-  const dataUrl = `data:image/${ext};base64,${fsExtra.readFileSync(filePath).toString('base64')}`;
+  try {
+    const fsExtra = require('fs');
+    const filePath = filePaths[0];
+    const stats = fsExtra.statSync(filePath);
+    const ext = path.extname(filePath).toLowerCase().replace('.', '') || 'png';
+    const dataUrl = `data:image/${ext};base64,${fsExtra.readFileSync(filePath).toString('base64')}`;
 
-  const { nativeImage } = require('electron');
-  const image = nativeImage.createFromPath(filePath);
-  const size = image.getSize(); // { width, height }
+    const { nativeImage } = require('electron');
+    const image = nativeImage.createFromPath(filePath);
+    const size = image.getSize(); // { width, height }
 
-  const imageData = {
-    path: filePath,
-    name: path.basename(filePath),
-    size: stats.size,
-    width: size.width,
-    height: size.height,
-    dataUrl
-  };
+    const imageData = {
+      path: filePath,
+      name: path.basename(filePath),
+      size: stats.size,
+      width: size.width,
+      height: size.height,
+      dataUrl
+    };
 
-  lastImageData = imageData; // Guardar última imagem aberta
+    lastImageData = imageData; // Guardar última imagem aberta
+    
+    // Detectar todas as imagens na pasta
+    imagesInFolder = getImagesInFolder(filePath);
+    currentImageIndex = imagesInFolder.indexOf(filePath);
 
-  // Detectar todas as imagens na pasta
-  imagesInFolder = getImagesInFolder(filePath);
-  currentImageIndex = imagesInFolder.indexOf(filePath);
+    // Mostrar a janela principal se ela estiver oculta
+    if (mainWindow && !mainWindow.isVisible()) {
+      mainWindow.show();
+    }
 
-  // Mostrar a janela principal se ela estiver oculta
-  if (mainWindow && !mainWindow.isVisible()) {
-    mainWindow.show();
+    mainWindow.webContents.send('image-data', imageData); // Enviar dados da imagem para a janela principal
+    if (previewWindow) previewWindow.webContents.send('preview-image', dataUrl); // Enviar dados da imagem para a janela de preview
+    
+    // 🔔 Notificação do sistema para carregamento bem-sucedido
+    showSystemNotification(
+      'Imagem Carregada',
+      `${imageData.name} (${imageData.width}x${imageData.height})`,
+      { silent: true }
+    );
+
+    return imageData;
+  } catch (error) {
+    // 🔔 Notificação do sistema para erro de carregamento
+    showSystemNotification(
+      'Erro ao Carregar Imagem',
+      'Não foi possível carregar a imagem selecionada.',
+      { silent: false }
+    );
+    return null;
   }
-
-  mainWindow.webContents.send('image-data', imageData); // Enviar dados da imagem para a janela principal
-  if (previewWindow) previewWindow.webContents.send('preview-image', dataUrl); // Enviar dados da imagem para a janela de preview
-
-  return imageData;
 }
 
 // Função para carregar uma imagem específica

@@ -19,33 +19,45 @@ const statusBar = document.getElementById('statusBar');
 
 // Abrir imagem
 document.getElementById('openImage').addEventListener('click', async () => {
-  const imageData = await window.electronAPI.openImage();
-  if (!imageData) return;
+  try {
+    const imageData = await window.electronAPI.openImage();
+    
+    if (!imageData) {
+      return;
+    }
 
-  imageInfoElement.innerHTML = `
-    <strong>Nome:</strong> ${imageData.name}<br>
-    <strong>Caminho:</strong> ${imageData.path}<br>
-    <strong>Tamanho:</strong> ${(imageData.size / 1024).toFixed(1)} KB<br>
-    <strong>Resolução:</strong> ${imageData.width}x${imageData.height}
-  `;
-  
-  imageInfoElement.style.display = 'block';
-  imagePreviewElement.src = imageData.dataUrl;
-  
-  adjustLayout(); // Ajustar layout após carregar imagem
+    imageInfoElement.innerHTML = `
+      <strong>Nome:</strong> ${imageData.name}<br>
+      <strong>Caminho:</strong> ${imageData.path}<br>
+      <strong>Tamanho:</strong> ${(imageData.size / 1024).toFixed(1)} KB<br>
+      <strong>Resolução:</strong> ${imageData.width}x${imageData.height}
+    `;
+    
+    imageInfoElement.style.display = 'block';
+    imagePreviewElement.src = imageData.dataUrl;
+    
+    adjustLayout(); // Ajustar layout após carregar imagem
+    
+  } catch (error) {
+    console.error('Erro ao carregar imagem:', error);
+  }
 });
 
 // Pré-visualização
 document.getElementById('previewImage').addEventListener('click', () => {
-  window.electronAPI.openPreview();
+  if (imagePreviewElement.src) {
+    window.electronAPI.openPreview();
+  }
 });
 
 // Fechar imagem
 document.getElementById('closeImage').addEventListener('click', () => {
-  imagePreviewElement.src = '';
-  imagePreviewElement.style.display = 'none'; // Esconder elemento da imagem
-  imageInfoElement.innerHTML = ''; // Limpar conteúdo das informações (CSS automático vai esconder)
-  adjustLayout(); // Ajustar layout após remover imagem
+  if (imagePreviewElement.src) {
+    imagePreviewElement.src = '';
+    imagePreviewElement.style.display = 'none'; // Esconder elemento da imagem
+    imageInfoElement.innerHTML = ''; // Limpar conteúdo das informações (CSS automático vai esconder)
+    adjustLayout(); // Ajustar layout após remover imagem
+  }
 })
 
 // Gerenciamento de energia
@@ -92,6 +104,47 @@ window.electronAPI.onWindowState((bounds) => {
   statusBar.textContent = `Posição: ${bounds.x},${bounds.y} | ${bounds.width}x${bounds.height}`;
 });
 
+// 🔔 Listeners para notificações de sistema
+window.electronAPI.onWindowMinimized(() => {
+  if (window.notifications) {
+    window.notifications.info(
+      'Janela Minimizada',
+      'Aplicação minimizada. Acesse pela bandeja do sistema.',
+      { duration: 3000 }
+    );
+  }
+});
+
+window.electronAPI.onWindowRestored(() => {
+  if (window.notifications) {
+    window.notifications.success(
+      'Janela Restaurada',
+      'Bem-vindo de volta ao PhotoViewer Lite!',
+      { duration: 2000 }
+    );
+  }
+});
+
+window.electronAPI.onWindowHidden(() => {
+  if (window.notifications) {
+    window.notifications.info(
+      'Aplicação na Bandeja',
+      'PhotoViewer Lite está rodando em segundo plano.',
+      { duration: 2500 }
+    );
+  }
+});
+
+window.electronAPI.onWindowShown(() => {
+  if (window.notifications) {
+    window.notifications.success(
+      'Aplicação Ativa',
+      'PhotoViewer Lite está pronto para uso!',
+      { duration: 2000 }
+    );
+  }
+});
+
 // Função para ajustar layout
 function adjustLayout() {
   const scrollContainer = document.querySelector('.scroll-container');
@@ -124,3 +177,5 @@ window.addEventListener('resize', adjustLayout);
 
 // Ajustar layout inicial
 adjustLayout();
+
+// Sistema de notificações carregado automaticamente

@@ -373,6 +373,23 @@
       if (window.electronAPI) {
         powerSaveBlockerActive = await window.electronAPI.togglePowerSaveBlocker();
         updatePowerSaveUI();
+        
+        // 🔔 Notificação de energia
+        if (window.notifications) {
+          if (powerSaveBlockerActive) {
+            window.notifications.energy(
+              'PowerSave Blocker Ativado',
+              'Sistema mantido acordado para melhor performance',
+              { duration: 3000 }
+            );
+          } else {
+            window.notifications.energy(
+              'PowerSave Blocker Desativado',
+              'Sistema pode entrar em modo de economia de energia',
+              { duration: 3000 }
+            );
+          }
+        }
       }
     }
 
@@ -389,6 +406,23 @@
         } else {
           clearInterval(updateInterval);
           updateInterval = setInterval(updateResourceData, 1000); // 1 segundo
+        }
+        
+        // 🔔 Notificação de modo economia
+        if (window.notifications) {
+          if (lowPowerModeActive) {
+            window.notifications.energy(
+              'Modo Economia Ativado',
+              'Reduzindo uso de recursos para economizar energia',
+              { duration: 3000 }
+            );
+          } else {
+            window.notifications.energy(
+              'Modo Economia Desativado',
+              'Performance total restaurada',
+              { duration: 3000 }
+            );
+          }
         }
       }
     }
@@ -472,16 +506,52 @@
       optimizeBtn.textContent = '⏳ Otimizando...';
       optimizeBtn.disabled = true;
       
+      // 🔔 Notificação de início da otimização
+      if (window.notifications) {
+        window.notifications.info(
+          'Otimização Iniciada',
+          'Analisando e otimizando recursos do sistema...',
+          { duration: 2000 }
+        );
+      }
+      
       if (window.electronAPI) {
         try {
           const result = await window.electronAPI.optimizeResources();
           if (result.success) {
             console.log('Otimização concluída:', result.message);
+            
+            // 🔔 Notificação de sucesso
+            if (window.notifications) {
+              window.notifications.success(
+                'Sistema Otimizado',
+                'Recursos otimizados com sucesso! Performance melhorada.',
+                { duration: 4000 }
+              );
+            }
           } else {
             console.error('Erro na otimização:', result.message);
+            
+            // 🔔 Notificação de erro
+            if (window.notifications) {
+              window.notifications.warning(
+                'Otimização Parcial',
+                'Alguns recursos não puderam ser otimizados.',
+                { duration: 4000 }
+              );
+            }
           }
         } catch (error) {
           console.error('Erro ao otimizar:', error);
+          
+          // 🔔 Notificação de erro crítico
+          if (window.notifications) {
+            window.notifications.error(
+              'Erro na Otimização',
+              'Falha ao otimizar recursos do sistema.',
+              { duration: 5000 }
+            );
+          }
         }
       }
       
@@ -522,6 +592,15 @@
       // Restaurar intervalo normal
       clearInterval(updateInterval);
       updateInterval = setInterval(updateResourceData, 1000);
+      
+      // 🔔 Notificação de restauração
+      if (window.notifications) {
+        window.notifications.info(
+          'Configurações Restauradas',
+          'Todas as configurações de energia foram restauradas aos padrões.',
+          { duration: 3000 }
+        );
+      }
     }
 
     // LISTENERS PARA COMUNICAÇÃO COM O PROCESSO PRINCIPAL
@@ -542,5 +621,8 @@
       }
     });
   </script>
+
+  <!-- Sistema de notificações elegante -->
+  <script src="notifications.js"></script>
 </body>
 </html>
